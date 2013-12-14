@@ -1,4 +1,18 @@
 plldesigner
 ===========
 
-A pythonic tool for PLL design and exploration
+A pythonic tool for PLL design and exploration. The final propose of this project is to have a complete design tool for PLL (Phase-locked loops) by creating a class that permits definer the different elements this class would eventually implement methods to:
+* Analise the loop stability (that should be easy with scipy.signal)
+* Specify the noise sources and calculate the overall noise
+  - Using PWL file (trivial)
+  - using the noise at 1Hz for the different components $1/f^0$,$1/f$,$1/f^2$,$1/f^3$
+  - Import them from CVS or other type or format
+  - Estimate the overall phase noise (by using a linear model)
+  - Extend the plot utility to show diffent components and noise and the integrated noise
+* Specify non-linearities in the loop and simulate the transient response (VCO, PFD-CP)
+  - That is similar to what already is done by cppsim but this is a propertary software and I a want to see if is posible to create enough momentum to have such a simulator with a open source project.
+  
+Status
+======
+
+Currently this is in a embrionic state, for the first two bullets I understand what has to be done and I have a relativly complete software in Matlab that I have developed. Regarding the third bullet I have been thinking in different alternatives: generate veriloga code, generate modelica code, generate pure C++ or Cython code.
