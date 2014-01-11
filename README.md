@@ -23,4 +23,5 @@ Develoment plant
 The first answer to ask is which units to use. I think that is better to standarize everything externally to Single side banded noise (dBc/Hz),  this unit gives more insight that $\phi(f_m)$ or $\phi^2_(f_m)$
 
 * Create the class structure to specify the noise,  the pnoise object, there have to be different init elements:
-  1. Noise, specially for oscilator can be specified as $f_n/fm^{-n}+f_{n=1}/fm^{-n+1}+$
+  1. Noise, specially for oscilator can be specified as $f_n/fm^{-n}+f_{n=1}/fm^{-n+1}+$ (done)
+  2. over rule the addition operatior
