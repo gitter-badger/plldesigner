@@ -8,26 +8,47 @@ Several open design questions:
     - should I left the class just with the fm out of question ?
     - That would not allow to create noise from the corners
 ''' 
-import numpy as np
+
+from __future__ import (absolute_import, division, print_function,
+                                unicode_literals)
+
+port numpy as np
 import scipy as sc
 import matplotlib.pyplot as plt
 
-class noise:
-
-    def __init__(self,fm,name="unamed",type='V^2/Hz'):
-        ''' This is class defines objects and operations
-        for noise objects'''
-        self.type = type
+class pnoise:
+    ''' 
+This is class defines objects and operations over phase noise values
+There are different types of input functions:
+    pwl
+    ---
+    pnoise(fm,fi,pn)
+    pnoise(fm,fi,pn,function='pwl')
+    pnoise(fm,pn,function='polynomic')
+    with different units:
+    pnoise(fm,fi,pn,
+    ''' 
+    def __init__(self,fm,*args,**kwargs):
+        self.units = 'dBc/Hz'
+        self.func = 'pwl'
         self.fm= np.array([])
-        self.phi2fm=np.array([])
+        self.Ldbc=np.array([])
+        if 'units' in kwargs:
+            self.units = kwargs['units']
+        if 'function' in kwargs:
+            self.func = kawargs['function']
+        self.func(fm,args,kwargs)
 
-    def pwl(self,fm,phi):
-        if self.type=='V/sqrt(Hz)':
-            self.phi2fm = phi*phi 
+    def pwl(self,fm,pnfi):
+        if self.units=='dBc/Hz':
+            self.LdBc = pnfi 
             self.fm = fm
-        else:
+        elif self.units=='rad/sqrt(Hz)':
             self.fm = fm
-            self.phi2fm = phi 
+            self.LdBc = 10*np.log10(pnfi**2/2)
+        elif self.units=='rad**2/Hz':
+            self.fm = fm
+            self.LdBc = 10*np.log10(pnfi/2)
 
     def plot(self,*args,**kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
