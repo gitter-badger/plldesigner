@@ -56,6 +56,10 @@ There are different types of input functions:
         add_noise= pnoise(self.fm,LdBc_add)
         return(add_noise)
 
+    def modfm(self,fi):
+        '''Redifine the ordinate from the new fm to fi'''
+        pass
+
     def integrate(self,fl=[],fh=[]):
         '''Returns the integrated phase noise in rad over the limits fl,fh '''
         try:
