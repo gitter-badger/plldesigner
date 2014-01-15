@@ -56,8 +56,9 @@ There are different types of input functions:
         add_noise= pnoise(self.fm,LdBc_add)
         return(add_noise)
 
-    def modfm(self,fi):
+    def interp1d(self,fi):
         '''Redifine the ordinate from the new fm to fi'''
+        Lout=interp1(log10(self.fm),self.LdBc,log10(fi),'linear');
         pass
 
     def integrate(self,fl=[],fh=[]):
@@ -79,7 +80,7 @@ There are different types of input functions:
             self.phi_out = sqrt(sum(bi))
         except ValueError:
             print('verify fm and LBc have the same size')
-        return(self.p)
+        return(self.phi_out)
         
 '''
 fm = nep.logspace(3,9,100)
