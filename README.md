@@ -21,8 +21,21 @@ Currently this is in a embrionic state, for the first two bullets I understand w
 
 Develoment plant
 ================
-The first answer to ask is which units to use. I think that is better to standarize everything externally to Single side banded noise (dBc/Hz),  this unit gives more insight that $\phi(f_m)$ or $\phi^2_(f_m)$
 
 * Create the class structure to specify the noise,  the pnoise object, there have to be different init elements:
   1. Noise, specially for oscilator can be specified as $f_n/fm^{-n}+f_{n=1}/fm^{-n+1}+$ (done)
-  2. over rule the addition operatior
+  2. over rule the addition operatior (done)
+  3. Interpolate
+  4. Generate a model of the data (extapolate)
+  5. Create plots with asintotic values  
+  6. Plot several noise sources and the resultant
+* LTI model of the PLL
+  1. Second order approximation
+  2. Phase margin plot ...
+  2. Timing vs phase  margin and error
+  3. phase noise optimization
+* Use the design routines:
+  1. Given fc and R (or the DN)  calculate the filter
+  2. Specify 
+
+
