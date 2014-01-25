@@ -19,7 +19,7 @@ Status
 Currently this is in a embrionic state, for the first two bullets I understand what has to be done and I have a relativly complete software in Matlab that I have developed. Regarding the third bullet I have been thinking in different alternatives: generate veriloga code, generate modelica code, generate pure C++ or Cython code.
 
 
-Develoment plant
+Develoment plan
 ================
 
 * Create the class structure to specify the noise,  the pnoise object, there have to be different init elements:
@@ -37,5 +37,12 @@ Develoment plant
 * Use the design routines:
   1. Given fc and R (or the DN)  calculate the filter
   2. Specify 
+* Spectrum rutines
+  Those are not specifically needed only for this project but for others
+  In any case can help in the implementation of the CP-PFD model 
+* Circuit simulator
+  1. First version with a fix step
+     -CP is a big impulse as proposed by Perrot
+
 
 
