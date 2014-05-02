@@ -5,7 +5,7 @@ import numpy as np
 from numpy import (zeros,arange)
 
 
-def gen_sigmaDelta(N,K,L,order):
+def gen_mash(N,K,L,order):
     ## Modulator of order 1
     MAX = 2**N-1
     if order==1:
@@ -18,7 +18,7 @@ def gen_sigmaDelta(N,K,L,order):
                 over1[j] = 1
                 stat1[j] = stat1[j] - (MAX+1)
         div = over1
-        per = (stat==0).astype(int)
+        per = (stat1==0).astype(int)
         if len(per)>1:
             per = per[1]-per[0]
         else:
@@ -30,7 +30,7 @@ def gen_sigmaDelta(N,K,L,order):
         stat2 = zeros(L, dtype=np.int)
         over1 = zeros(L, dtype=np.int)
         over2 = zeros(L, dtype=np.int)
-    
+     
         for j in arange(1,L):
             stat1[j] = stat1[j-1] + K
             if stat1[j] > MAX:
@@ -47,7 +47,8 @@ def gen_sigmaDelta(N,K,L,order):
             per = per[1] - per[0]
         else :
             per = -1      
-    
+
+    # Modulator of order 2        
     elif order==3:
 
         stat1 = zeros(L, dtype=np.int)
@@ -74,9 +75,10 @@ def gen_sigmaDelta(N,K,L,order):
             if stat3[j] > MAX:
                 over3[j] = 1
                 stat3[j] = stat3[j] - (MAX + 1)
-        div = over1 + over2 - np.hstack(([0],over2[:-1]))
+        div = over1
+        div += over2 - np.hstack(([0],over2[:-1]))
         div += over3 - 2*np.hstack(([0],over3[:-1]))
-        div += 2*np.hstack(([0],[0],over3[:-2]))
+        div += np.hstack(([0],[0],over3[:-2]))
 
         stat = stat1 + stat2 + stat3
         per = (stat==0).astype(int)
