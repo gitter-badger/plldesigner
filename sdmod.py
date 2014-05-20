@@ -1,10 +1,11 @@
 '''
-Functions related with SD modulators
- '''
+Implementation of a sigma delta modulator and the functions related
+'''
 
 import numpy as np
-from numpy import (zeros, arange)
+from numpy import (zeros, arange, log10, sin, pi)
 
+    
 def gen_mash(order, N, K):
     ''' Generates a mash type $\Sigma-\Delta$ sequence 
     
@@ -28,7 +29,7 @@ def gen_mash(order, N, K):
     This implementation is not really effective from the computational 
     point of view but is representative of the architecture of the
     system. 
-        '''
+    '''
     # Modulator of order 1
     MAX = 2**N-1
     L = len(K)
@@ -37,7 +38,7 @@ def gen_mash(order, N, K):
         over1[0] = 1
         stat1 = zeros(L, dtype=np.int)
         for j in arange(1, L):
-            stat1[j] = stat1[j-1]+K[j-1]
+            stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAX:
                 over1[j] = 1
                 stat1[j] = stat1[j] - (MAX+1)
@@ -110,11 +111,28 @@ def gen_mash(order, N, K):
             per = per[1] - per[0]
         else:
             per = -1
-
     return div, per
-  
-def mash_theoretical():
-    pass
+    
+def L_mash_dB(m,fm,fref,N=1.0):
+    """ Phase noise theoretical value of noise produced by a mash SDM 
+    
+    This procedure implements the noise at the output of the SD modulator
+    
+    Parameters
+    ----------
+    m : int
+        The order of the SD modulator
+    fm : array_like
+        Frequency offsets were the  noise is calculated
+    fref : float
+        Reference frequency that is used to compare the output of the SD
+        modulator
+    N: float
+        It is the average division ratio.
+        
+    """
+    return 10*log10((2*pi)**2/(12*fref)*(2*sin(pi*fm/fref))**(2*(m-1))/N**2)
+    
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
     import  numpy.random as rnd
