@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 '''
 First version of this class
-Several open design questions:
-    - in order to keep the same regular fm around
-    - the class need to be interpolated and extrapolated
-      how to do that ?
-    - should I left the class just with the fm out of question ?
-    - That would not allow to create noise from the corners
 ''' 
 
 from __future__ import (absolute_import, division, print_function,
                                 unicode_literals)
-
 import numpy as np
 from numpy import log10,sqrt,sum
 import scipy as sc
@@ -52,7 +45,7 @@ There are different types of input functions:
             phi2fm_other = 2*10**(other.LdBc/10)
             LdBc_add = 10*log10((phi2fm+phi2fm_other)/2)
         except ValueError as er:
-            print('Aditions is only allowed with vector of equal size')
+            print('Additions is only allowed with vector of equal size')
         add_noise= pnoise(self.fm,LdBc_add)
         return(add_noise)
 
@@ -61,25 +54,44 @@ There are different types of input functions:
         Lout=interp1(log10(self.fm),self.LdBc,log10(fi),'linear');
         pass
 
-    def integrate(self,fl=[],fh=[]):
-        '''Returns the integrated phase noise in rad over the limits fl,fh '''
-        try:
-            if fl==[]:
-                fl = min(self.fm)
-            if fh==[]:
-                fh = max(self.fm)
-            ix = (self.fm>=fl)  & (self.fm<=fh)
-            fm_ix = self.fm[ix]
-            LdBc_ix = self.LdBc[ix]
+    def integrate(self,fl=[],fh=[],method='trapz'):
+        '''Returns the integrated phase noise in rad over the limits fl,fh 
+        Uses the Gardner algorithm.
+        '''
+
+        def gardner(LdBc_ix,fm_ix):
+            ''' This is the Garder book integration method for the phase noise
+            that does not work always with measurements or data'''
             lfm = len(LdBc_ix)
+            #calculate the slope
             ai =((LdBc_ix[1:lfm]-LdBc_ix[:lfm-1])/
                 (log10(fm_ix[1:lfm])-log10(fm_ix[:lfm-1])))
-            bi = (2*10**(LdBc_ix[:lfm-1]/10)*fm_ix[:lfm-1]**(-ai/10)/
-                (ai/10+1)*(fm_ix[1:lfm]**(ai/10+1)-
-                fm_ix[:lfm-1]**(ai/10+1)))
-            self.phi_out = sqrt(sum(bi))
-        except ValueError:
-            print('verify fm and LBc have the same size')
+            if np.all(ai<6):
+                """ If the slopes are never too big used Gardner method
+                In simulations this is not the case """
+                bi = (2*10**(LdBc_ix[:lfm-1]/10)*fm_ix[:lfm-1]**(-ai/10)/
+                    (ai/10+1)*(fm_ix[1:lfm]**(ai/10+1)-
+                    fm_ix[:lfm-1]**(ai/10+1)))
+            return  sqrt(sum(bi))
+             
+        
+        def trapz(LdBc_ix,fm_ix):
+            phi_2 = 2*10**(LdBc_ix/10)
+            return sqrt(np.trapz(phi_2,fm_ix))
+        
+        if fl==[]:
+            fl = min(self.fm)
+        if fh==[]:
+            fh = max(self.fm)
+        ix = (self.fm>=fl)  & (self.fm<=fh)
+        fm_ix = self.fm[ix]
+        LdBc_ix = self.LdBc[ix]
+        if method=='trapz': 
+            self.phi_out = trapz(LdBc_ix,fm_ix)
+        elif method=='Gardner':
+            self.phi_out = gardner(LdBc_ix,fm_ix)
+        else: 
+            raise Exception('Integrating method not implemented')
         return(self.phi_out)
         
 '''
