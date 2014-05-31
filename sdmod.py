@@ -31,7 +31,7 @@ def gen_mash(order, N, K):
     system. 
     '''
     # Modulator of order 1
-    MAX = 2**N-1
+    MAXVAL = 2**N-1
     L = len(K)
     if order == 1:
         over1 = zeros(L, dtype=np.int)
@@ -39,11 +39,11 @@ def gen_mash(order, N, K):
         stat1 = zeros(L, dtype=np.int)
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
-            if stat1[j] > MAX:
+            if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAX+1)
+                stat1[j] = stat1[j] - (MAXVAL+1)
         div = over1
-        per = (stat1 == 0).astype(int)
+        per = np.where(stat1 == 0)[0]
         if len(per) > 1:
             per = per[1]-per[0]
         else:
@@ -58,16 +58,16 @@ def gen_mash(order, N, K):
 
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
-            if stat1[j] > MAX:
+            if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAX + 1)
+                stat1[j] = stat1[j] - (MAXVAL + 1)
             stat2[j] = stat2[j-1] + stat1[j]
-            if stat2[j] > MAX:
+            if stat2[j] > MAXVAL:
                 over2[j] = 1
-                stat2[j] = stat2[j] - (MAX + 1)
+                stat2[j] = stat2[j] - (MAXVAL + 1)
         div = over1 + over2 - np.hstack(([0], over2[:-1]))
         stat = stat1 + stat2
-        per = (stat == 0).astype(int)
+        per = np.where(stat1 == 0)[0]
         if len(per) > 1:
             per = per[1] - per[0]
         else:
@@ -87,26 +87,26 @@ def gen_mash(order, N, K):
 
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
-            if stat1[j] > MAX:
+            if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAX + 1)
+                stat1[j] = stat1[j] - (MAXVAL + 1)
 
             stat2[j] = stat2[j-1] + stat1[j]
-            if stat2[j] > MAX:
+            if stat2[j] > MAXVAL:
                 over2[j] = 1
-                stat2[j] = stat2[j] - (MAX + 1)
+                stat2[j] = stat2[j] - (MAXVAL + 1)
 
             stat3[j] = stat3[j-1] + stat2[j]
-            if stat3[j] > MAX:
+            if stat3[j] > MAXVAL:
                 over3[j] = 1
-                stat3[j] = stat3[j] - (MAX + 1)
+                stat3[j] = stat3[j] - (MAXVAL + 1)
         div = over1
         div += over2 - np.hstack(([0], over2[:-1]))
         div += over3 - 2*np.hstack(([0], over3[:-1]))
         div += np.hstack(([0], [0], over3[:-2]))
 
         stat = stat1 + stat2 + stat3
-        per = (stat == 0).astype(int)
+        per = np.where(stat1 == 0)[0]
         if len(per) > 1:
             per = per[1] - per[0]
         else:
@@ -135,7 +135,7 @@ def L_mash_dB(m,fm,fref,N=1.0):
     
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
-    import  numpy.random as rnd
+    import  numpy.random as rnd   
     # Test order one assert the mean value
     floatnum = rnd.rand()*np.ones(10000)
     

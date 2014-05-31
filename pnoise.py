@@ -78,6 +78,7 @@ There are different types of input functions:
         def trapz(LdBc_ix,fm_ix):
             phi_2 = 2*10**(LdBc_ix/10)
             return sqrt(np.trapz(phi_2,fm_ix))
+
         
         if fl==[]:
             fl = min(self.fm)
