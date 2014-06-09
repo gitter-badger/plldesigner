@@ -6,7 +6,7 @@ import numpy as np
 from numpy import (zeros, arange, log10, sin, pi)
 
     
-def gen_mash(order, N, K):
+def gen_mash(order, N, K, init=()):
     ''' Generates a mash type $\Sigma-\Delta$ sequence 
     
     Parameters
@@ -15,9 +15,12 @@ def gen_mash(order, N, K):
         order of the $\Sigma-\Delta$ modulator.
     N : int
         Number of bits of the modulator.
-    K : float
+    K : int
         Value being converted
-        
+    init: tuple
+        init is a tuple that initialize the register of the
+        mash sd, at with length equal to the order.
+          
     Returns
     -------
     div : 
@@ -34,9 +37,12 @@ def gen_mash(order, N, K):
     MAXVAL = 2**N-1
     L = len(K)
     if order == 1:
+        # initialize the registers
         over1 = zeros(L, dtype=np.int)
         over1[0] = 1
         stat1 = zeros(L, dtype=np.int)
+        if len(init)==1:
+            stat1[0] = init[0]
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
@@ -51,11 +57,16 @@ def gen_mash(order, N, K):
 
     # Modulator of order 2
     elif order == 2:
+        # initialize the registers
         stat1 = zeros(L, dtype=np.int)
         stat2 = zeros(L, dtype=np.int)
         over1 = zeros(L, dtype=np.int)
         over2 = zeros(L, dtype=np.int)
-
+        if len(init)==2:
+            stat1[0]=init[0]
+            stat2[0]=init[1]
+            
+        # Implement the SDM 
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
@@ -75,16 +86,20 @@ def gen_mash(order, N, K):
 
     # Modulator of order 3
     elif order == 3:
-
+        # initialize the registers
         stat1 = zeros(L, dtype=np.int)
         stat2 = zeros(L, dtype=np.int)
         stat3 = zeros(L, dtype=np.int)
-
+        if len(init)==3:
+            stat1[0]=init[0]
+            stat2[0]=init[1]
+            stat3[0]=init[2]
         over1 = zeros(L, dtype=np.int)
         over1[0] = 1
         over2 = zeros(L, dtype=np.int)
         over3 = zeros(L, dtype=np.int)
-
+        
+        # Implement the SDM 
         for j in arange(1, L):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
@@ -137,14 +152,22 @@ if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
     import  numpy.random as rnd   
     # Test order one assert the mean value
-    floatnum = rnd.rand()*np.ones(10000)
+    floatnum = rnd.rand()*np.ones(100000)
     
     # order one
-    sequence, per = gen_mash(1, 19, floatnum*2**19)
+    sequence, per = gen_mash(1, 19, (floatnum*2**19).astype(int))
     assert_almost_equal(sequence.mean(), floatnum.mean(), 4)
     # order two
-    sequence, per = gen_mash(2, 19, floatnum*2**19)
+    sequence, per = gen_mash(2, 19, (floatnum*2**19).astype(int))
     assert_almost_equal(sequence.mean(), floatnum.mean(), 4)
+    
+    # order three
+    sequence, per = gen_mash(3, 19, (floatnum*2**19).astype(int))
+    assert_almost_equal(sequence.mean(), floatnum.mean(), 4)
+    
+    # order three
+    sequence, per = gen_mash(3, 19, 0.25*np.ones(100000)*2**19)
+    assert_almost_equal(sequence.mean(), 0.25, 4)
     
     
 

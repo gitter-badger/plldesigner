@@ -3,14 +3,14 @@
 First version of this class
 ''' 
 
-from __future__ import (absolute_import, division, print_function,
-                                unicode_literals)
+from __future__ import (absolute_import, division, print_function)
+
 import numpy as np
 from numpy import log10,sqrt,sum
 import scipy as sc
 import matplotlib.pyplot as plt
 
-class pnoise:
+class pnoise(object):
     ''' 
 This is class defines objects and operations over phase noise values
 There are different types of input functions:
