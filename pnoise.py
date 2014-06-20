@@ -10,13 +10,13 @@ from numpy import log10,sqrt,sum
 import scipy as sc
 import matplotlib.pyplot as plt
 
-class pnoise(object):
+class Pnoise(object):
     ''' 
 This is class defines objects and operations over phase noise values
 There are different types of input functions:
-    pnoise(fm,LdBc)
-    pnoise(fm,LdBc,label='label')
-    pnoise(fm,phi,units='rad/sqrt(Hz)'
+    Pnoise(fm,LdBc)
+    Pnoise(fm,LdBc,label='label')
+    Pnoise(fm,phi,units='rad/sqrt(Hz)'
     The options of units are:
         dBc/Hz (default)
         rad/sqrt(Hz)
@@ -25,19 +25,20 @@ There are different types of input functions:
     def __init__(self,fm,pnfm,label=None,units='dBc/Hz'):
         self.units = units 
         self.label = label
-        self.fm = fm 
+        self.fm = np.array(fm)
         # functions to handle the units
         __funits = {
                 'dBc/Hz' : lambda x: x,
                 'rad/sqrt(Hz)' : lambda x: 10*log10(x**2/2), 
                 'rad**/Hz' : lambda x: 10*log10(x/2), 
                 }
-        self.LdBc = __funits[units](pnfm)
+        self.LdBc = __funits[units](np.array(pnfm))
 
     def plot(self,*args,**kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
         plt.xlabel('$f_m$(Hz)')
-        fig= plt.semilogx(self.fm,self.LdBc,label=self.label,*args,**kwargs)
+        ax= plt.semilogx(self.fm,self.LdBc,label=self.label,*args,**kwargs)
+        return(ax)
 
     def __add__(self,other):
         try:
@@ -46,8 +47,16 @@ There are different types of input functions:
             LdBc_add = 10*log10((phi2fm+phi2fm_other)/2)
         except ValueError as er:
             print('Additions is only allowed with vector of equal size')
-        add_noise= pnoise(self.fm,LdBc_add)
+        add_noise= Pnoise(self.fm,LdBc_add)
         return(add_noise)
+        
+    def __mul__(self,mult):
+        if type(mult) not in (int,float):
+            raise TypeError('unsupported operand type(s) for mult')
+        else:
+            mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult))
+            return(mult_noise)
+            
 
     def interp1d(self,fi):
         '''Redifine the ordinate from the new fm to fi'''
@@ -97,6 +106,6 @@ There are different types of input functions:
         
 '''
 fm = nep.logspace(3,9,100)
-lorentzian  = pnoise(fm,1/(fm*fm))
+lorentzian  = Pnoise(fm,1/(fm*fm))
 fig = lorentzian.plot('-o')
 '''
