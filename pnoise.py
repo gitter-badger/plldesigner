@@ -52,10 +52,16 @@ There are different types of input functions:
         return(add_noise)
         
     def __mul__(self,mult):
-        if type(mult) not in (int,float):
+        if type(mult) not in (int,float,np.ndarray):
             raise TypeError('unsupported operand type(s) for mult')
         else:
-            mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult))
+            if type(mult) in (int,float):
+                mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult),label=self.label)
+            else:
+                try:
+                    mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult),label=self.label)
+                except ValueError as er:
+                    print('Vectors are not of the same lenght')
             return(mult_noise)
             
 
