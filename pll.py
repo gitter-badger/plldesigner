@@ -115,32 +115,23 @@ class AnalogPll(object):
             vn2R2 = 4*k.k*Temp*R2*np.abs(HvnR2)**2
             vn2 = vn2R1+vn2R2
         return(vn2)
-
-    def pnoise_calc(Lin_ref,Lout_ref,fm,Mult=1,Div=1):
-        phi2_in_ref = 2*10.^(Lin_ref/10)
-        Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
-        phi2_in_ref = phi2_in_ref.*abs(Hfm).^2
-        Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div)
-        # Filter the noise of  the output refered sources
-        phi2_out_ref = 2*10.^(Lout_ref/10)
-        Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
-        phi2_out_ref = phi2_out_ref.*abs(Tfm).^2
-        Lout_ref = 10*log10(phi2_out_ref/2)+20*log10(Mult)+20*log10(1/Div)
-        # sum column wise the numbers and add them afterwards
-        phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
-        # divition
-        Ltot = 10*log10(phi2_tot/2)
-
-        phi_int = pnoise_integrate(10*log10(phi2_tot/2),fm,fm(1),fm(end))
-        '''
-        if isverbose
-         fprintf(1,'------------------- Phase Noise Report -------------------\n');
-         fprintf(1,' pm(Degrees)    %2.1e  [%2.1f(KHz)  %2.1f(MHz)] \n',...
-                phi_int*180/pi,fm(1)/1e3,fm(end)/1e6);  
-        end
-        end
-        '''
-                
+    
+    def pnoise_calc(Lin_ref, Lout_ref, fm, Mult=1, Div=1):
+         phi2_in_ref = 2*10**(Lin_ref/10)
+         Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
+         phi2_in_ref = phi2_in_ref*abs(Hfm)**2
+         Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div)
+         # Filter the noise of  the output refered sources
+         phi2_out_ref = 2*10**(Lout_ref/10)
+         Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
+         phi2_out_ref = phi2_out_ref*abs(Tfm)**2
+         Lout_ref = 10*log10(phi2_out_ref/2)+20*log10(Mult)+20*log10(1/Div)
+         # sum column wise the numbers and add them afterward
+         phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
+         # divition
+         Ltot = 10*log10(phi2_tot/2)
+         phi_int = pnoise_integrate(10*log10(phi2_tot/2),fm,fm(1),fm(end))
+               
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
     pll=AnalogPll(3,5.218e+08,Navg=55.22,prescaler=2,plltype='fractionalN')
