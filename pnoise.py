@@ -64,7 +64,6 @@ There are different types of input functions:
         func = intp.interp1d(log10(self.fm),self.LdBc,kind='linear')
         self.fm = fi
         self.LdBc = func(log10(fi))
-        return(Lout)
 
     def integrate(self,fl=[],fh=[],method='trapz'):
         '''Returns the integrated phase noise in rad over the limits fl,fh 
