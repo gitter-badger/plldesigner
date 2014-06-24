@@ -120,7 +120,7 @@ class AnalogPll(object):
          phi2_in_ref = 2*10**(Lin_ref/10)
          Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
          phi2_in_ref = phi2_in_ref*abs(Hfm)**2
-         Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div)
+         Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div) 
          # Filter the noise of  the output refered sources
          phi2_out_ref = 2*10**(Lout_ref/10)
          Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
