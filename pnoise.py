@@ -61,7 +61,7 @@ There are different types of input functions:
 
     def interp1d(self,fi):
         '''Redifine the ordinate from the new fm to fi'''
-        Lout = intp.interp1(log10(self.fm),self.LdBc,log10(fi),'linear');
+        Lout = intp.interp1d(log10(self.fm),self.LdBc,log10(fi),'linear');
         pass
 
     def integrate(self,fl=[],fh=[],method='trapz'):
