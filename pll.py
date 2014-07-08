@@ -115,8 +115,7 @@ class AnalogPll(object):
                     (C1*C2*R1+C1*C3*R1+C1*C3*R2+C2*C3*R2)*s+C1+C2+C3)
             vn2R2 = 4*k.k*Temp*R2*np.abs(HvnR2)**2
             vn2 = vn2R1+vn2R2
-        pn_vcn2 = pn.Pnoise(fm,vn2,label='vn2 (V^2/Hz)')
-        return(pn_vcn2)
+        return(vn2)
     
     def pnoise_calc(Lin_ref, Lout_ref, fm, Mult=1, Div=1):
          phi2_in_ref = 2*10**(Lin_ref/10)

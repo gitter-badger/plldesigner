@@ -42,6 +42,7 @@ There are different types of input functions:
         return(ax)
 
     def __add__(self,other):
+        ''' Addition of though pnoise components '''
         try:
             phi2fm = 2*10**(self.LdBc/10)
             phi2fm_other = 2*10**(other.LdBc/10)
@@ -52,14 +53,15 @@ There are different types of input functions:
         return(add_noise)
         
     def __mul__(self,mult):
+        ''' Multiplication of noise by a constant '''
         if type(mult) not in (int,float,np.ndarray):
             raise TypeError('unsupported operand type(s) for mult')
         else:
             if type(mult) in (int,float):
-                mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult),label=self.label)
+                mult_noise = Pnoise(self.fm,self.LdBc+10*log10(mult),label=self.label)
             else:
                 try:
-                    mult_noise = Pnoise(self.fm,self.LdBc+20*log10(mult),label=self.label)
+                    mult_noise = Pnoise(self.fm,self.LdBc+10*log10(mult),label=self.label)
                 except ValueError as er:
                     print('Vectors are not of the same lenght')
             return(mult_noise)
