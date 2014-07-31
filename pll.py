@@ -8,7 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy import sqrt
 import scipy.constants as k
-from . import pnoise as pn 
+import pnoise as pn 
 
 class AnalogPll(object):
     def __init__(self, order, Kvco, Navg=1, prescaler=1, plltype='integer', 
@@ -122,17 +122,27 @@ class AnalogPll(object):
          Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
          phi2_in_ref = phi2_in_ref*abs(Hfm)**2
          Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div) 
-         # Filter the noise of  the output refered sources
+         # Filter the noise of  the output referred sources
          phi2_out_ref = 2*10**(Lout_ref/10)
          Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
          phi2_out_ref = phi2_out_ref*abs(Tfm)**2
          Lout_ref = 10*log10(phi2_out_ref/2)+20*log10(Mult)+20*log10(1/Div)
-         # sum column wise the numbers and add them afterward
+         # sum column wise the numbers and add them afterwards
          phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
-         # divition
+         # division
          Ltot = 10*log10(phi2_tot/2)
          phi_int = pnoise_integrate(10*log10(phi2_tot/2),fm,fm(1),fm(end))
-               
+         
+class vco(object):
+    def __init__(self, kvco, fo, vfo):
+        self.kvco = kvco
+        self.fo = fo
+        self.vfo = vfo
+        self.freq_vs_volt = lambda vcont : self.fo + (vcont - self.vfo) * self.kvco
+        
+        
+        
+    
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
     pll=AnalogPll(3,5.218e+08,Navg=55.22,prescaler=2,plltype='fractionalN')
