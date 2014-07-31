@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 '''
-First version of this class
+A Class to work with phase noise frequency data points
 ''' 
 
 from __future__ import (absolute_import, division, print_function)
@@ -114,8 +114,15 @@ There are different types of input functions:
             raise Exception('Integrating method not implemented')
         return(self.phi_out)
         
-'''
-fm = nep.logspace(3,9,100)
-lorentzian  = Pnoise(fm,1/(fm*fm))
-fig = lorentzian.plot('-o')
-'''
+if __name__ == "__main__":
+    from numpy.testing import  assert_almost_equal
+    import  numpy.random as rnd 
+    print('Test not implemented!')  
+    # Test order one assert the mean value
+    #floatnum = rnd.rand()*np.ones(100000)
+    
+    # order one
+    #sequence, per = gen_mash(1, 19, (floatnum*2**19).astype(int))
+    #assert_almost_equal(sequence.mean(), floatnum.mean(), 4)
+    # order two
+  
