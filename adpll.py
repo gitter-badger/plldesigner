@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi, sin, cos, log10, exp, zeros, mod
 import matplotlib.pyplot as plt
-import plldesigner.pll
+import plldesigner.pll as pll
 
 class Sim(object):
     def __init__(self, resultdir, ts, tend):
