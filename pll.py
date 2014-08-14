@@ -8,9 +8,9 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy import sqrt
 import scipy.constants as k
-import pnoise as pn 
+import plldesigner.pnoise as pn 
 
-class AnalogPll(object):
+class AnalogPLL(object):
     def __init__(self, order, Kvco, Navg=1, prescaler=1, plltype='integer', 
                  filter_vals={}):
         self.order, self.Kvco, self.Navg = order, Kvco, Navg
@@ -18,13 +18,12 @@ class AnalogPll(object):
         self.filter_vals = filter_vals
         
 
-    def loopcalc(self, fc, pm, Kvco, Lvco, fr, DL, Temp=300.13):
+    def loopcalc(self, fc, pm, Lvco, fr, DL, Temp=300.13):
         '''
           Calculates a linear PLL using fc,pm,order(2,3), Navg
           [filter,G,T,H] = loopvalues(fc,pm,order,Navg,Kvco,Lvco,fr,DL,Temp)
           fc(Hz)          The cut off frequency
           pm(Degrees)     The decided phase margin
-          Kvco (Hz/V)     The VCO gain
           Lvco (dBc)      VCO phase noise at(fr)
           fr (Hz)         Frequency the Lvco is specified
           DL(dB)          Distortion of the Lvco by R1 allowed
@@ -35,8 +34,9 @@ class AnalogPll(object):
           ToDo:           The distance from tp2 to tp1 should be calculated 
                           if possible from the noise 
         --------------------------------------------------------------------'''
-        self.fc, self.pm, self.Kvco, self.Lvco = fc, pm, Kvco, Lvco
+        self.fc, self.pm, self.Lvco = fc, pm, Lvco
         self.fr, self.DL, self.Temp = fr, DL, Temp
+        Kvco = self.Kvco
         # phisical constants
         if self.order==2:
             b = (np.tan(pm*k.pi/180/2+k.pi/4))**2
@@ -145,7 +145,7 @@ class vco(object):
     
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
-    pll=AnalogPll(3,5.218e+08,Navg=55.22,prescaler=2,plltype='fractionalN')
-    pll.loopcalc(1e6,60.0,5.218e+08,-107.8, 1e6, 0.7, 300)
+    pll=AnalogPLL(3,5.218e+08,Navg=55.22,prescaler=2,plltype='fractionalN')
+    pll.loopcalc(1e6,60.0,-107.8, 1e6, 0.7, 300)
     
     
