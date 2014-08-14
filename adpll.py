@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import pi, sin, cos, log10, exp, zeros, mod
 import matplotlib.pyplot as plt
-import pll
+import plldesigner.pll
 
 class Sim(object):
     def __init__(self, resultdir, ts, tend):
@@ -12,9 +12,9 @@ class Sim(object):
         
 class Struct(object):
     pass
-
-mypll=pll.AnalogPll(3,5.218e+08,Navg=55.22,prescaler=2,plltype='fractionalN')
-mypll.loopcalc(1e6,60.0,5.218e+08,-107.8, 1e6, 0.7, 300)
+Icp = 300e-6;
+mypll=pll.AnalogPLL(3, 5.218e+08, Navg=55.22, prescaler=2, plltype='fractionalN')
+mypll.loopcalc(1e6, 60.0, -107.8, 1e6, 0.7, 300)
 
 if __name__ == "__main__":
     sim_tran = Sim('./sim/', 1e-9, 500e-6)
