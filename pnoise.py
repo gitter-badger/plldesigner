@@ -7,7 +7,6 @@ from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy import log10,sqrt,sum
-import scipy as sc
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
 
@@ -118,11 +117,5 @@ if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
     import  numpy.random as rnd 
     print('Test not implemented!')  
-    # Test order one assert the mean value
-    #floatnum = rnd.rand()*np.ones(100000)
-    
-    # order one
-    #sequence, per = gen_mash(1, 19, (floatnum*2**19).astype(int))
-    #assert_almost_equal(sequence.mean(), floatnum.mean(), 4)
-    # order two
+
   
