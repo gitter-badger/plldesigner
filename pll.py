@@ -18,24 +18,24 @@ class AnalogPLL(object):
         self.filter_vals = filter_vals
         
 
-    def loopcalc(self, fc, pm, Lvco, fr, DL, Temp=300.13):
+    def loopcalc(self, fc, pm, Lvco, Lvco_fr, DL, Temp=300.13):
         '''
           Calculates a linear PLL using fc,pm,order(2,3), Navg
-          [filter,G,T,H] = loopvalues(fc,pm,order,Navg,Kvco,Lvco,fr,DL,Temp)
+          [filter,G,T,H] = loopvalues(fc,pm,order,Navg,Kvco,Lvco,Lvco_fr,DL,Temp)
           fc(Hz)          The cut off frequency
           pm(Degrees)     The decided phase margin
-          Lvco (dBc)      VCO phase noise at(fr)
-          fr (Hz)         Frequency the Lvco is specified
+          Lvco (dBc)      VCO phase noise at(Lvco_fr)
+          Lvco_fr (Hz)         Frequency the Lvco is specified
           DL(dB)          Distortion of the Lvco by R1 allowed
           Temp(K)         K
           filter_val      Is a dictionary with all the filter components
           
                          
           ToDo:           The distance from tp2 to tp1 should be calculated 
-                          if possible from the noise 
-        --------------------------------------------------------------------'''
+                          if possible from the noise  '''
+                          
         self.fc, self.pm, self.Lvco = fc, pm, Lvco
-        self.fr, self.DL, self.Temp = fr, DL, Temp
+        self.Lvco_fr, self.DL, self.Temp = Lvco_fr, DL, Temp
         Kvco = self.Kvco
         # phisical constants
         if self.order==2:
@@ -46,7 +46,7 @@ class AnalogPLL(object):
             tz = 1/wz
             tp = 1/wp
             phi_fm = sqrt(2*10**(Lvco/10))
-            R1 = (10**(DL/10)-1)/((b-1)/b)/(4*k.k*Temp*Kvco**2)*phi_fm**2*fr**2
+            R1 = (10**(DL/10)-1)/((b-1)/b)/(4*k.k*Temp*Kvco**2)*phi_fm**2*Lvco_fr**2
             C1 = tz/R1
             C2 = tz*tp/R1/(tz-tp)
             Icp = (2*k.pi*self.Navg*fc*b)/(R1*Kvco*(b-1))
@@ -59,7 +59,7 @@ class AnalogPLL(object):
             tz = 1/wz
             tp = 1/wp
             phi_fm = sqrt(2*10**(Lvco/10))
-            R1 = (10**(DL/10)-1)/((b-1)/b)/(4*k.k*Temp*Kvco**2)*phi_fm**2*fr**2
+            R1 = (10**(DL/10)-1)/((b-1)/b)/(4*k.k*Temp*Kvco**2)*phi_fm**2*Lvco_fr**2
             C1 = tz/R1
             C2 = tz*tp/R1/(tz-tp)
             Icp = (2*k.pi*self.Navg*fc*b)/(R1*Kvco*(b-1))
@@ -68,6 +68,7 @@ class AnalogPLL(object):
             R2 = tp2/C3
             self.filter_vals = {'C1':C1, 'C2':C2, 'C3':C3, 'R1':R1, 'R2':R2, 
                                 'Icp': Icp}
+
     def calcTF(self, fm):
         s = 2*k.pi*fm*1j
         Navg, Kvco, fvals = (self.Navg, self.Kvco, self.filter_vals)
@@ -97,10 +98,16 @@ class AnalogPLL(object):
             print('order not implemented, the noise can not be calculated')
             raise
         return(Hfm,Gfm,Tfm)
+    
+    def calcfcpm(self,fm):
+        Hfm, Gfm, Tfm = self.calcTF(fm)
+        
+        
+    
 
     def filter_vn2(self, fm, Temp=300.13): 
         fvals = self.filter_vals
-        s = 2*k.pi*fm*1j;
+        s = 2*k.pi*fm*1j
         if self.order==2:
             C1, C2, R1 = (fvals['C1'], fvals['C2'], fvals['R1'])
             HvnR1 = C1/((C1*C2*R1)*s+C1+C2)
@@ -133,6 +140,21 @@ class AnalogPLL(object):
          Ltot = 10*log10(phi2_tot/2)
          phi_int = pnoise_integrate(10*log10(phi2_tot/2),fm,fm(1),fm(end))
          
+    def __repr__(self):
+        str_val  = 'Filter report \n'
+        str_val += '============= \n'
+        str_val += 'Input parameters: \n'
+        str_val += 'fc = {:2.3f} (MHz), pm = {:d} (deegres) \n'.format(self.fc/1e6,self.pm)
+        str_val += 'Ideal values: \n'
+        str_val += 'Icp = {:2.3f} (uA), R1 = {:2.3f} (Kohms), R2 = {:2.3f} (KoHms) \n'.format(
+            self.filter_vals['Icp']/1e-6, self.filter_vals['R1']/1e3, 
+            self.filter_vals['R2']/1e3)
+        str_val += 'C1 = {:2.3f} (pf), C2 = {:2.3f} (pf), C3 = {:2.3f} (pf)\n'.format(
+        self.filter_vals['C1']/1e-12, self.filter_vals['C2']/1e-12, 
+        self.filter_vals['C3']/1e-12)
+        return(str_val)
+        
+         
 class vco(object):
     def __init__(self, kvco, fo, vfo):
         self.kvco = kvco
@@ -141,7 +163,12 @@ class vco(object):
         self.freq_vs_volt = lambda vcont : self.fo + (vcont - self.vfo) * self.kvco
         
         
-        
+class AnalogPLLDict(AnalogPLL):
+    def __init__(self, _dict):
+        self.__dict__.update(_dict)
+        self.loopcalc(_dict['fc'], _dict['pm'], _dict['Lvco'],
+            _dict['Lvco_fr'], _dict['DL'], Temp=_dict['Temp'])
+       
     
 if __name__ == "__main__":
     from numpy.testing import  assert_almost_equal
