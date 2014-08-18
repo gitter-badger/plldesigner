@@ -187,14 +187,10 @@ def test_loopcalc():
     assert_almost_equal(myAnalogPLL.filter_vals['R1'], 1.3864303e3, 4)
     assert_almost_equal(myAnalogPLL.filter_vals['R2'], 1.28688908e3, 4)
 
+
 def tests():
     test_loopcalc()
 
 
 if __name__ == "__main__":
     tests()
-
-
-
-    
-    
