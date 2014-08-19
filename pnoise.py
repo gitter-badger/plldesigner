@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 A Class to work with phase noise frequency data points
-''' 
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
-from numpy import log10,sqrt,sum
+from numpy import log10, sqrt, sum
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
 
 class Pnoise(object):
-    ''' 
+    """
 This is class defines objects and operations over phase noise values
 There are different types of input functions:
     Pnoise(fm,LdBc)
@@ -21,88 +21,88 @@ There are different types of input functions:
         dBc/Hz (default)
         rad/sqrt(Hz)
         rad**2/Hz
-        ''' 
-    def __init__(self,fm,pnfm,label=None,units='dBc/Hz'):
-        self.units = units 
+        """
+    def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
+        self.units = units
         self.label = label
         self.fm = np.array(fm)
         # functions to handle the units
         __funits = {
                 'dBc/Hz' : lambda x: x,
-                'rad/sqrt(Hz)' : lambda x: 10*log10(x**2/2), 
-                'rad**/Hz' : lambda x: 10*log10(x/2), 
+                'rad/sqrt(Hz)' : lambda x: 10 * log10(x ** 2 / 2),
+                'rad**/Hz' : lambda x: 10 * log10(x / 2),
                 }
         self.LdBc = __funits[units](np.array(pnfm))
 
-    def plot(self,*args,**kwargs):
+    def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
         plt.xlabel('$f_m$(Hz)')
-        ax= plt.semilogx(self.fm,self.LdBc,label=self.label,*args,**kwargs)
+        ax= plt.semilogx(self.fm, self.LdBc, label=self. label, *args, **kwargs)
         return(ax)
 
-    def __add__(self,other):
+    def __add__(self, other):
         ''' Addition of though pnoise components '''
         try:
-            phi2fm = 2*10**(self.LdBc/10)
-            phi2fm_other = 2*10**(other.LdBc/10)
-            LdBc_add = 10*log10((phi2fm+phi2fm_other)/2)
+            phi2fm = 2 * 10 ** (self.LdBc / 10)
+            phi2fm_other = 2 * 10 ** (other.LdBc / 10)
+            LdBc_add = 10 * log10((phi2fm + phi2fm_other) / 2)
         except ValueError as er:
             print('Additions is only allowed with vector of equal size')
-        add_noise= Pnoise(self.fm,LdBc_add)
-        return(add_noise)
+        add_noise= Pnoise(self.fm, LdBc_add)
+        return add_noise
         
-    def __mul__(self,mult):
+    def __mul__(self, mult):
         ''' Multiplication of noise by a constant '''
-        if type(mult) not in (int,float,np.ndarray):
+        if type(mult) not in (int, float, np.ndarray):
             raise TypeError('unsupported operand type(s) for mult')
         else:
-            if type(mult) in (int,float):
-                mult_noise = Pnoise(self.fm,self.LdBc+10*log10(mult),label=self.label)
+            if type(mult) in (int, float):
+                mult_noise = Pnoise(self.fm, self.LdBc+10*log10(mult), label=self.label)
             else:
                 try:
-                    mult_noise = Pnoise(self.fm,self.LdBc+10*log10(mult),label=self.label)
+                    mult_noise = Pnoise(self.fm, self.LdBc+10*log10(mult), label=self.label)
                 except ValueError as er:
-                    print('Vectors are not of the same lenght')
+                    print('Vectors are not of the same length')
             return(mult_noise)
             
 
-    def interp1d(self,fi):
+    def interp1d(self, fi):
         '''Redifine the ordinate from the new fm to fi'''
-        func = intp.interp1d(log10(self.fm),self.LdBc,kind='linear')
+        func = intp.interp1d(log10(self.fm), self.LdBc, kind='linear')
         self.fm = fi
         self.LdBc = func(log10(fi))
 
-    def integrate(self,fl=[],fh=[],method='trapz'):
-        '''Returns the integrated phase noise in rad over the limits fl,fh 
+    def integrate(self, fl=[], fh=[], method='trapz'):
+        """Returns the integrated phase noise in rad over the limits fl,fh
         Uses the Gardner algorithm.
-        '''
+        """
 
-        def gardner(LdBc_ix,fm_ix):
-            ''' This is the Garder book integration method for the phase noise
-            that does not work always with measurements or data'''
+        def gardner(LdBc_ix, fm_ix):
+            """ This is the Garder book integration method for the phase noise
+            that does not work always with measurements or data"""
             lfm = len(LdBc_ix)
             #calculate the slope
-            ai =((LdBc_ix[1:lfm]-LdBc_ix[:lfm-1])/
-                (log10(fm_ix[1:lfm])-log10(fm_ix[:lfm-1])))
-            if np.all(ai<6):
+            ai =((LdBc_ix[1:lfm] - LdBc_ix[:lfm-1]) /
+                (log10(fm_ix[1:lfm]) - log10(fm_ix[:lfm-1])))
+            if np.all(ai < 6):
                 """ If the slopes are never too big used Gardner method
                 In simulations this is not the case """
-                bi = (2*10**(LdBc_ix[:lfm-1]/10)*fm_ix[:lfm-1]**(-ai/10)/
-                    (ai/10+1)*(fm_ix[1:lfm]**(ai/10+1)-
-                    fm_ix[:lfm-1]**(ai/10+1)))
+                bi = (2 * 10 ** (LdBc_ix[:lfm-1] / 10) * fm_ix[:lfm-1] ** (-ai/10) /
+                    (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1)-
+                    fm_ix[:lfm-1] ** (ai / 10 + 1)))
             return  sqrt(sum(bi))
              
         
-        def trapz(LdBc_ix,fm_ix):
-            phi_2 = 2*10**(LdBc_ix/10)
-            return sqrt(np.trapz(phi_2,fm_ix))
+        def trapz(LdBc_ix, fm_ix):
+            phi_2 = 2 * 10 ** (LdBc_ix / 10)
+            return sqrt(np.trapz(phi_2, fm_ix))
 
         
-        if fl==[]:
+        if fl == []:
             fl = min(self.fm)
-        if fh==[]:
+        if fh == []:
             fh = max(self.fm)
-        ix = (self.fm>=fl)  & (self.fm<=fh)
+        ix = (self.fm >= fl)  & (self.fm <= fh)
         fm_ix = self.fm[ix]
         LdBc_ix = self.LdBc[ix]
         if method=='trapz': 
