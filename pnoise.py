@@ -120,13 +120,13 @@ Testing and other functions
 from numpy.testing import  assert_almost_equal
 
 def test():
-    fm = np.logspace(3,9,100)
-    lorentzian  = Pnoise(fm,10*np.log10(1/(fm*fm)),label='Lorentzian')
-    white = Pnoise(fm,-120*np.ones(fm.shape),label='white')
+    fm = np.logspace(3, 9, 100)
+    lorentzian  = Pnoise(fm, 10*np.log10(1/(fm*fm)), label='Lorentzian')
+    white = Pnoise(fm, -120*np.ones(fm.shape), label='white')
     added = white+lorentzian
     assert_almost_equal(added.LdBc[0], -60 , 4)
-    assert_almost_equal(added.LdBc[-1],-120, 4)
-    ix,= np.where(fm>1e6)
+    assert_almost_equal(added.LdBc[-1], -120, 4)
+    ix,= np.where(fm > 1e6)
     assert_almost_equal(added.LdBc[ix[0]], -117.2822, 4)
 
 if __name__ == "__main__":
