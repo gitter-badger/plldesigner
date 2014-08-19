@@ -8,7 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy import sqrt, log10, tan
 import scipy.constants as k
-from  pnoise import Pnoise
+from  .pnoise import Pnoise
 
 class AnalogPLL(object):
     def __init__(self, order, Kvco, Navg=1.0, prescaler=1, plltype='integer',
@@ -142,19 +142,19 @@ class AnalogPLL(object):
         phi_int = pnLtot.integrate()
         return phi_int
 
-    def __repr__(self):
+    def filter_repr(self):
         str_val  = 'Filter report \n'
         str_val += '============= \n'
         str_val += 'Input parameters: \n'
-        str_val += 'fc = {:2.3f} (MHz), pm = {:d} (deegres) \n'.format(self.fc / 1e6,self.pm)
+        str_val += 'fc = {:2.3f} (MHz), pm = {:d} (degrees) \n'.format(self.fc / 1e6,self.pm)
         str_val += 'Ideal values: \n'
-        str_val += 'Icp = {:2.3f} (uA), R1 = {:2.3f} (Kohms), R2 = {:2.3f} (KoHms) \n'.format(
+        str_val += 'Icp = {:2.3f} (uA), R1 = {:2.3f} (Kohms), R2 = {:2.3f} (Kohms) \n'.format(
             self.filter_vals['Icp'] / 1e-6, self.filter_vals['R1'] / 1e3,
             self.filter_vals['R2'] / 1e3)
         str_val += 'C1 = {:2.3f} (pf), C2 = {:2.3f} (pf), C3 = {:2.3f} (pf)\n'.format(
         self.filter_vals['C1'] / 1e-12, self.filter_vals['C2'] / 1e-12,
         self.filter_vals['C3'] / 1e-12)
-        return(str_val)
+        return str_val
 
 
 class vco(object):
