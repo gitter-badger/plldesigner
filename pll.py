@@ -138,7 +138,7 @@ class AnalogPLL(object):
          phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
          # division
          Ltot = 10*log10(phi2_tot/2)
-         pnLtot  = pn.Pnoise(fm, Ltot)
+         pnLtot  = Pnoise(fm, Ltot)
          phi_int = pnLtot
 
     def __repr__(self):
