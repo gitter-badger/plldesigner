@@ -25,21 +25,20 @@ Develoment plan
 * Create the class structure to specify the noise,  the pnoise object, there have to be different init elements:
   1. Noise, specially for oscilator can be specified as $f_n/fm^{-n}+f_{n=1}/fm^{-n+1}+$ (done)
   2. over rule the addition operatior (done)
-  3. Interpolate
-  4. Generate a model of the data (extapolate)
-  5. Create plots with asintotic values  
-  6. Plot several noise sources and the resultant
+  3. Interpolate (done)
+  4. Generate a model of the data (extapolate) (Pospone)
+  5. Create plots with asintotic values (Pospone)
+  6. Plot several noise sources and the resultant 
 * LTI model of the PLL
-  1. Second order approximation
-  2. Phase margin plot ...
+  1. Second order approximation (Done)
+  2. Phase margin plot ... 
   2. Timing vs phase  margin and error
-  3. phase noise optimization
+  3. phase noise optimization 
 * Use the design routines:
-  1. Given fc and R (or the DN)  calculate the filter
+  1. Given fc and R (or the DN)  calculate the filter (done)
   2. Specify 
-* Spectrum rutines
-  Those are not specifically needed only for this project but for others
-  In any case can help in the implementation of the CP-PFD model 
+* Spectrum rutines. (Those are not specifically needed only for this project but for others In any case can help in the implementation of the CP-PFD model) (I studied it
+  pwell is enough)
 * Circuit simulator
   1. First version with a fix step
      -CP is a big impulse as proposed by Perrot
