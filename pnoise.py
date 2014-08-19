@@ -37,8 +37,8 @@ There are different types of input functions:
     def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
         plt.xlabel('$f_m$(Hz)')
-        ax= plt.semilogx(self.fm, self.LdBc, label=self. label, *args, **kwargs)
-        return(ax)
+        ax = plt.semilogx(self.fm, self.LdBc, label=self. label, *args, **kwargs)
+        return ax
 
     def __add__(self, other):
         ''' Addition of though pnoise components '''
@@ -63,7 +63,7 @@ There are different types of input functions:
                     mult_noise = Pnoise(self.fm, self.LdBc+10*log10(mult), label=self.label)
                 except ValueError as er:
                     print('Vectors are not of the same length')
-            return(mult_noise)
+            return mult_noise
             
 
     def interp1d(self, fi):
@@ -82,7 +82,7 @@ There are different types of input functions:
             that does not work always with measurements or data"""
             lfm = len(LdBc_ix)
             #calculate the slope
-            ai =((LdBc_ix[1:lfm] - LdBc_ix[:lfm-1]) /
+            ai = ((LdBc_ix[1:lfm] - LdBc_ix[:lfm-1]) /
                 (log10(fm_ix[1:lfm]) - log10(fm_ix[:lfm-1])))
             if np.all(ai < 6):
                 """ If the slopes are never too big used Gardner method
@@ -90,7 +90,7 @@ There are different types of input functions:
                 bi = (2 * 10 ** (LdBc_ix[:lfm-1] / 10) * fm_ix[:lfm-1] ** (-ai/10) /
                     (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1)-
                     fm_ix[:lfm-1] ** (ai / 10 + 1)))
-            return  sqrt(sum(bi))
+            return sqrt(sum(bi))
              
         
         def trapz(LdBc_ix, fm_ix):
@@ -111,7 +111,7 @@ There are different types of input functions:
             self.phi_out = gardner(LdBc_ix,fm_ix)
         else: 
             raise Exception('Integrating method not implemented')
-        return(self.phi_out)
+        return self.phi_out
 
 """
 Testing and other functions
@@ -131,5 +131,3 @@ def test():
 
 if __name__ == "__main__":
     test()
-
-  
