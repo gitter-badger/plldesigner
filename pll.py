@@ -125,21 +125,22 @@ class AnalogPLL(object):
         return(vn2)
 
     def pnoise_calc(Lin_ref, Lout_ref, fm, Mult=1, Div=1):
-         phi2_in_ref = 2*10**(Lin_ref/10)
-         Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
-         phi2_in_ref = phi2_in_ref*abs(Hfm)**2
-         Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div)
-         # Filter the noise of  the output referred sources
-         phi2_out_ref = 2*10**(Lout_ref/10)
-         Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
-         phi2_out_ref = phi2_out_ref*abs(Tfm)**2
-         Lout_ref = 10*log10(phi2_out_ref/2)+20*log10(Mult)+20*log10(1/Div)
-         # sum column wise the numbers and add them afterwards
-         phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
-         # division
-         Ltot = 10*log10(phi2_tot/2)
-         pnLtot  = Pnoise(fm, Ltot)
-         phi_int = pnLtot
+        phi2_in_ref = 2*10**(Lin_ref/10)
+        Hfm = repmat(Hfm,size(phi2_in_ref,1),1)
+        phi2_in_ref = phi2_in_ref*abs(Hfm)**2
+        Lin_ref = 10*log10(phi2_in_ref/2)+20*log10(Mult)+20*log10(1/Div)
+        # Filter the noise of  the output referred sources
+        phi2_out_ref = 2*10**(Lout_ref/10)
+        Tfm = repmat(Tfm,size(phi2_out_ref,1),1)
+        phi2_out_ref = phi2_out_ref*abs(Tfm)**2
+        Lout_ref = 10*log10(phi2_out_ref/2)+20*log10(Mult)+20*log10(1/Div)
+        # sum column wise the numbers and add them afterwards
+        phi2_tot = (sum(phi2_in_ref,1)+sum(phi2_out_ref,1))*Mult^2/Div^2
+        # division
+        Ltot = 10*log10(phi2_tot/2)
+        pnLtot  = Pnoise(fm, Ltot)
+        phi_int = pnLtot.integrate()
+        return phi_int
 
     def __repr__(self):
         str_val  = 'Filter report \n'
