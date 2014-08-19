@@ -10,6 +10,7 @@ from numpy import log10, sqrt, sum
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
 
+
 class Pnoise(object):
     """
 This is class defines objects and operations over phase noise values
@@ -22,22 +23,24 @@ There are different types of input functions:
         rad/sqrt(Hz)
         rad**2/Hz
         """
+
     def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
         self.units = units
         self.label = label
         self.fm = np.array(fm)
         # functions to handle the units
         __funits = {
-                'dBc/Hz' : lambda x: x,
-                'rad/sqrt(Hz)' : lambda x: 10 * log10(x ** 2 / 2),
-                'rad**/Hz' : lambda x: 10 * log10(x / 2),
-                }
+            'dBc/Hz': lambda x: x,
+            'rad/sqrt(Hz)': lambda x: 10 * log10(x ** 2 / 2),
+            'rad**/Hz': lambda x: 10 * log10(x / 2),
+        }
         self.LdBc = __funits[units](np.array(pnfm))
 
     def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
         plt.xlabel('$f_m$(Hz)')
-        ax = plt.semilogx(self.fm, self.LdBc, label=self. label, *args, **kwargs)
+        ax = plt.semilogx(self.fm, self.LdBc, label=self.label, *args,
+                          **kwargs)
         return ax
 
     def __add__(self, other):
@@ -48,23 +51,23 @@ There are different types of input functions:
             LdBc_add = 10 * log10((phi2fm + phi2fm_other) / 2)
         except ValueError as er:
             print('Additions is only allowed with vector of equal size')
-        add_noise= Pnoise(self.fm, LdBc_add)
+        add_noise = Pnoise(self.fm, LdBc_add)
         return add_noise
-        
+
     def __mul__(self, mult):
         ''' Multiplication of noise by a constant '''
         if type(mult) not in (int, float, np.ndarray):
             raise TypeError('unsupported operand type(s) for mult')
         else:
             if type(mult) in (int, float):
-                mult_noise = Pnoise(self.fm, self.LdBc+10*log10(mult), label=self.label)
+                mult_noise = Pnoise(self.fm, self.LdBc + 10 * log10(mult), label=self.label)
             else:
                 try:
-                    mult_noise = Pnoise(self.fm, self.LdBc+10*log10(mult), label=self.label)
+                    mult_noise = Pnoise(self.fm, self.LdBc + 10 * log10(mult), label=self.label)
                 except ValueError as er:
                     print('Vectors are not of the same length')
             return mult_noise
-            
+
 
     def interp1d(self, fi):
         '''Redifine the ordinate from the new fm to fi'''
@@ -81,53 +84,54 @@ There are different types of input functions:
             """ This is the Garder book integration method for the phase noise
             that does not work always with measurements or data"""
             lfm = len(LdBc_ix)
-            #calculate the slope
-            ai = ((LdBc_ix[1:lfm] - LdBc_ix[:lfm-1]) /
-                (log10(fm_ix[1:lfm]) - log10(fm_ix[:lfm-1])))
+            # calculate the slope
+            ai = ((LdBc_ix[1:lfm] - LdBc_ix[:lfm - 1]) /
+                  (log10(fm_ix[1:lfm]) - log10(fm_ix[:lfm - 1])))
             if np.all(ai < 6):
                 """ If the slopes are never too big used Gardner method
                 In simulations this is not the case """
-                bi = (2 * 10 ** (LdBc_ix[:lfm-1] / 10) * fm_ix[:lfm-1] ** (-ai/10) /
-                    (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1)-
-                    fm_ix[:lfm-1] ** (ai / 10 + 1)))
+                bi = (2 * 10 ** (LdBc_ix[:lfm - 1] / 10) * fm_ix[:lfm - 1] ** (-ai / 10) /
+                      (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1) -
+                                       fm_ix[:lfm - 1] ** (ai / 10 + 1)))
             return sqrt(sum(bi))
-             
-        
+
         def trapz(LdBc_ix, fm_ix):
             phi_2 = 2 * 10 ** (LdBc_ix / 10)
             return sqrt(np.trapz(phi_2, fm_ix))
 
-        
         if fl == []:
             fl = min(self.fm)
         if fh == []:
             fh = max(self.fm)
-        ix = (self.fm >= fl)  & (self.fm <= fh)
+        ix = (self.fm >= fl) & (self.fm <= fh)
         fm_ix = self.fm[ix]
         LdBc_ix = self.LdBc[ix]
-        if method=='trapz': 
-            self.phi_out = trapz(LdBc_ix,fm_ix)
-        elif method=='Gardner':
-            self.phi_out = gardner(LdBc_ix,fm_ix)
-        else: 
+        if method == 'trapz':
+            self.phi_out = trapz(LdBc_ix, fm_ix)
+        elif method == 'Gardner':
+            self.phi_out = gardner(LdBc_ix, fm_ix)
+        else:
             raise Exception('Integrating method not implemented')
         return self.phi_out
+
 
 """
 Testing and other functions
 """
 
-from numpy.testing import  assert_almost_equal
+from numpy.testing import assert_almost_equal
+
 
 def test():
     fm = np.logspace(3, 9, 100)
-    lorentzian  = Pnoise(fm, 10*np.log10(1/(fm*fm)), label='Lorentzian')
-    white = Pnoise(fm, -120*np.ones(fm.shape), label='white')
-    added = white+lorentzian
-    assert_almost_equal(added.LdBc[0], -60 , 4)
+    lorentzian = Pnoise(fm, 10 * np.log10(1 / (fm * fm)), label='Lorentzian')
+    white = Pnoise(fm, -120 * np.ones(fm.shape), label='white')
+    added = white + lorentzian
+    assert_almost_equal(added.LdBc[0], -60, 4)
     assert_almost_equal(added.LdBc[-1], -120, 4)
-    ix,= np.where(fm > 1e6)
+    ix, = np.where(fm > 1e6)
     assert_almost_equal(added.LdBc[ix[0]], -117.2822, 4)
+
 
 if __name__ == "__main__":
     test()
