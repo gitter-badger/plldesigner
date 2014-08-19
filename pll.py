@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
-'''
+"""
 First version of this class
-'''
+"""
 
 from __future__ import (absolute_import, division, print_function)
 
 import numpy as np
 from numpy import sqrt
 import scipy.constants as k
-from  .pnoise import Pnoise
+from  pnoise import Pnoise
 
 class AnalogPLL(object):
     def __init__(self, order, Kvco, Navg=1, prescaler=1, plltype='integer',
@@ -19,7 +19,7 @@ class AnalogPLL(object):
 
 
     def loopcalc(self, fc, pm, Lvco, Lvco_fr, DL, Temp=300.13):
-        '''
+        """
           Calculates a linear PLL using fc,pm,order(2,3), Navg
           [filter,G,T,H] = loopvalues(fc,pm,order,Navg,Kvco,Lvco,Lvco_fr,DL,Temp)
           fc(Hz)          The cut off frequency
@@ -32,7 +32,7 @@ class AnalogPLL(object):
 
 
           ToDo:           The distance from tp2 to tp1 should be calculated
-                          if possible from the noise  '''
+                          if possible from the noise """
 
         self.fc, self.pm, self.Lvco = fc, pm, Lvco
         self.Lvco_fr, self.DL, self.Temp = Lvco_fr, DL, Temp
@@ -50,7 +50,7 @@ class AnalogPLL(object):
             C1 = tz/R1
             C2 = tz*tp/R1/(tz-tp)
             Icp = (2*k.pi*self.Navg*fc*b)/(R1*Kvco*(b-1))
-            self.filter_vals = {'C1':C1, 'C2':C2, 'R1':R1,'Icp': Icp}
+            self.filter_vals = {'C1' : C1, 'C2' : C2, 'R1' : R1, 'Icp' : Icp}
         if self.order==3:
             b = (np.tan(pm*k.pi/180/2+k.pi/4))**2
             wc = 2*k.pi*fc
