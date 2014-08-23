@@ -1,6 +1,6 @@
-'''
+"""
 Implementation of a sigma delta modulator and the functions related
-'''
+"""
 
 import numpy as np
 from numpy import (zeros, arange, log10, sin, pi)
@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 class SDModulator(object):
-    ''' Creates a Sigma-Delta modulator object
+    """ Creates a Sigma-Delta modulator object
 
     Parameters
     ==========
@@ -17,9 +17,9 @@ class SDModulator(object):
         ('mash')
     *arg  : Positional arguments for the different types of SDMOD
     **argk :
-    '''
+    """
     def __init__(self, modtype, *arg, **argk):
-        ''' '''
+        """ """
         self.modtype = modtype
         func = {'mash': gen_mash}
         self.seq, self.per = func[modtype](*arg, **argk)
@@ -34,7 +34,7 @@ class SDModulator(object):
 
 
 def gen_mash(order, N, K, init=()):
-    ''' Generates a mash type $\Sigma-\Delta$ sequence
+    """ Generates a mash type $\Sigma-\Delta$ sequence
 
     Parameters
     ----------
@@ -59,7 +59,7 @@ def gen_mash(order, N, K, init=()):
     This implementation is not really effective from the computational
     point of view but is representative of the architecture of the
     system.
-    '''
+    """
 
     # Assertions
     assert len(init) == order or len(init) == 0, (
@@ -104,11 +104,11 @@ def gen_mash(order, N, K, init=()):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAXVAL + 1)
+                stat1[j] -= MAXVAL + 1
             stat2[j] = stat2[j-1] + stat1[j]
             if stat2[j] > MAXVAL:
                 over2[j] = 1
-                stat2[j] = stat2[j] - (MAXVAL + 1)
+                stat2[j] -= MAXVAL + 1
         div = over1 + over2 - np.hstack(([0], over2[:-1]))
         stat = stat1 + stat2
         per = np.where(stat == 0)[0]
@@ -137,17 +137,17 @@ def gen_mash(order, N, K, init=()):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAXVAL + 1)
+                stat1[j] -= MAXVAL + 1
 
             stat2[j] = stat2[j-1] + stat1[j]
             if stat2[j] > MAXVAL:
                 over2[j] = 1
-                stat2[j] = stat2[j] - (MAXVAL + 1)
+                stat2[j] -= MAXVAL + 1
 
             stat3[j] = stat3[j-1] + stat2[j]
             if stat3[j] > MAXVAL:
                 over3[j] = 1
-                stat3[j] = stat3[j] - (MAXVAL + 1)
+                stat3[j] -= MAXVAL + 1
         div = over1
         div += over2 - np.hstack(([0], over2[:-1]))
         div += over3 - 2*np.hstack(([0], over3[:-1]))
@@ -181,22 +181,22 @@ def gen_mash(order, N, K, init=()):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAXVAL + 1)
+                stat1[j] -= MAXVAL + 1
 
             stat2[j] = stat2[j-1] + stat1[j]
             if stat2[j] > MAXVAL:
                 over2[j] = 1
-                stat2[j] = stat2[j] - (MAXVAL + 1)
+                stat2[j] -= MAXVAL + 1
 
             stat3[j] = stat3[j-1] + stat2[j]
             if stat3[j] > MAXVAL:
                 over3[j] = 1
-                stat3[j] = stat3[j] - (MAXVAL + 1)
+                stat3[j] -= MAXVAL + 1
             stat4[j] = stat4[j-1] + stat3[j]
             if stat4[j] > MAXVAL:
                 over4[j] = 1
-                stat4[j] = stat4[j] - (MAXVAL + 1)
-                
+                stat4[j] -= MAXVAL + 1
+
         div =  (over1 +
                 over2 - np.hstack(([0], over2[:-1])) +
                 over3 - 2*np.hstack(([0], over3[:-1])) +
@@ -205,7 +205,7 @@ def gen_mash(order, N, K, init=()):
                 3*np.hstack(([0], [0], over4[:-2])) -
                 np.hstack(([0], [0], [0], over4[:-3]))
                 )
-        
+
 
         stat = stat1 + stat2 + stat3 + stat4
         per = np.where(stat == 0)[0]
@@ -213,7 +213,7 @@ def gen_mash(order, N, K, init=()):
             per = per[1] - per[0]
         else:
             per = -1
-    
+
     return div, per
 
 
@@ -256,7 +256,7 @@ if __name__ == "__main__":
     # order three
     sequence, per = gen_mash(3, 19, 0.25*np.ones(100000)*2**19)
     assert_almost_equal(sequence.mean(), 0.25, 4)
-    
+
     # order three
     sequence, per = gen_mash(4, 19, 0.25*np.ones(100000)*2**19)
     assert_almost_equal(sequence.mean(), 0.25, 4)
