@@ -80,7 +80,7 @@ def gen_mash(order, N, K, init=()):
             stat1[j] = stat1[j-1] + K[j-1]
             if stat1[j] > MAXVAL:
                 over1[j] = 1
-                stat1[j] = stat1[j] - (MAXVAL+1)
+                stat1[j] -= MAXVAL + 1
         div = over1
         per = np.where(stat1 == 0)[0]
         if len(per) > 1:
@@ -197,15 +197,14 @@ def gen_mash(order, N, K, init=()):
                 over4[j] = 1
                 stat4[j] -= MAXVAL + 1
 
-        div =  (over1 +
-                over2 - np.hstack(([0], over2[:-1])) +
-                over3 - 2*np.hstack(([0], over3[:-1])) +
-                np.hstack(([0], [0], over3[:-2])) +
-                over4 - 3*np.hstack(([0], over4[:-1])) +
-                3*np.hstack(([0], [0], over4[:-2])) -
-                np.hstack(([0], [0], [0], over4[:-3]))
-                )
-
+        div = (over1 +
+               over2 - np.hstack(([0], over2[:-1])) +
+               over3 - 2*np.hstack(([0], over3[:-1])) +
+               np.hstack(([0], [0], over3[:-2])) +
+               over4 - 3*np.hstack(([0], over4[:-1])) +
+               3*np.hstack(([0], [0], over4[:-2])) -
+               np.hstack(([0], [0], [0], over4[:-3]))
+        )
 
         stat = stat1 + stat2 + stat3 + stat4
         per = np.where(stat == 0)[0]
@@ -218,7 +217,7 @@ def gen_mash(order, N, K, init=()):
 
 
 def L_mash_dB(m, fm, fref, N=1.0):
-    """ Phase noise theoretical value of noise produced by a mash SDM
+    """ Phase noise theoretical value of noise produced by a mash111 SDM
 
     This procedure calculates the noise at the output of the SD modulator
 
