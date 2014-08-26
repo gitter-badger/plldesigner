@@ -1,7 +1,8 @@
 plldesigner
 ===========
 
-A pythonic tool for PLL design and exploration (focused in PLLs implemented in hardware). The final propose of this project is to have a complete design tool for PLL (Phase-locked loops) by creating a class that permits definer the different elements this class would eventually implement methods to:
+
+A pythonic tool for PLL design and exploration (focused in PLLs implemented in hardware). More information can be found in [Phase Unlocked](http://jfosorio.github.io/). The final propose of this project is to have a complete design tool for PLL (Phase-locked loops) by creating a class that permits definer the different elements this class would eventually implement methods to:
 * Analise the loop stability (that should be easy with scipy.signal)
 * Specify the noise sources and calculate the overall noise
   - Using PWL file (trivial)
