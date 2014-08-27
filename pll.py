@@ -172,8 +172,8 @@ class AnalogPLLDict(AnalogPLL):
             _dict['Lvco_fr'], _dict['DL'], Temp=_dict['Temp'])
 
 
-""" Tests
-
+""" 
+Tests
 """
 from numpy.testing import  assert_almost_equal
 
