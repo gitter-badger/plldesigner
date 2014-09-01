@@ -13,7 +13,6 @@ import scipy.interpolate as intp
 
 """ Help functions  """
 
-
 def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
     """
     Function to evaluate a asymptotic model of the phase noise
@@ -40,6 +39,13 @@ def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
     phi2_fm = np.sum(phi2_matrix*(fm_matrix/fi_matrix)**slopes_matrix, axis=1)
     ldbc_fm = 10*log10(phi2_fm/2)
     return ldbc_fm
+
+def __pnoise_interp1d__(self, fi, ldbc_fi, fm):
+    '''Redifine the ordinate from the new fm to fi'''
+    func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
+    ldbc = func_intp(log10(fm))
+    return ldbc
+
 
 
 class Pnoise(object):
@@ -87,7 +93,7 @@ There are different types of input functions:
         }
         self.ldbc = __funits[units](np.array(pnfm))
         try:
-            self.func_ldbc = intp.interp1d(log10(self.fm), self.ldbc, kind='linear')
+            self.func_ldbc = lambda fx : __pnoise_interp1d__(fm, self.ldbc, fx)
         except:
             self.func_ldbc = None
 
@@ -174,12 +180,6 @@ There are different types of input functions:
                     print('Vectors are not of the same length')
             return mult_noise
 
-
-    def interp1d(self, fi):
-        '''Redifine the ordinate from the new fm to fi'''
-        func = intp.interp1d(log10(self.fm), self.ldbc, kind='linear')
-        self.fm = fi
-        self.ldbc = func(log10(fi))
 
     def integrate(self, fl=[], fh=[], method='trapz'):
         """Returns the integrated phase noise in rad over the limits fl,fh
