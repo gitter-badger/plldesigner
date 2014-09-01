@@ -14,7 +14,7 @@ import scipy.interpolate as intp
 """ Help functions  """
 
 
-def __point_slope_func__(fi, ldbc_fi, slopes, fm):
+def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
     """
     Function to evaluate a asymptotic model of the phase noise
     :param fi:
@@ -117,7 +117,7 @@ There are different types of input functions:
         cls.ldbc = None
 
     @classmethod
-    def with_points_slope(cls, fi, ldbc_fi, slopes, label=None):
+    def with_points_slopes(cls, fi, ldbc_fi, slopes, label=None):
         """
         Phase noise with point and slope
 
@@ -139,7 +139,7 @@ There are different types of input functions:
         pnoise_class.fi = fi
         pnoise_class.slopes = slopes
         pnoise_class.ldbc_fi = ldbc_fi
-        pnoise_class.func_ldbc = lambda fm: __point_slope_func__(fi, slopes, ldbc_fi, fm)
+        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(fi, slopes, ldbc_fi, fm)
 
 
     def plot(self, *args, **kwargs):
@@ -245,7 +245,7 @@ def test_private_functions():
     ldbc_fi = np.array([-40, -150])
     slopes = np.array([-30, -20])
     fm = np.logspace(3, 9, 20)
-    ldbc_model = __point_slope_func__(fi, ldbc_fi, slopes, fm)
+    ldbc_model = __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm)
     func = intp.interp1d(log10(fm), ldbc_model, kind='linear')
     ldbc_0 = func(log10(fi[0]))
     ldbc_1 = func(log10(fi[1]))
