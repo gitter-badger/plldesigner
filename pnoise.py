@@ -116,14 +116,12 @@ There are different types of input functions:
         pnoise : Pnoise
 
         """
-        pnoise_class = cls(None, None, label=label, units='dBc/Hz')
-        pnoise_class.fi = fi
+        pnoise_class = cls(fi, ldbc_fi, label=label, units='dBc/Hz')
         pnoise_class.slopes = slopes
-        pnoise_class.ldbc_fi = ldbc_fi
-        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(fi, slopes, ldbc_fi, fm)
+        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm)
         return pnoise_class
 
-    def interp1(self, fx):
+    def eval_func(self, fx):
         pnoise_class = Pnoise(fx, self.func_ldbc(fx),label=self.label)
         return pnoise_class
 
@@ -264,7 +262,7 @@ def test_with_interpolation(plot=False):
     fm = np.logspace(3, 9, 1000)
     lorentzian = Pnoise.with_interpolation(fm, 10 * np.log10(1 / (fm * fm)), label='Lorentzian')
     fi = np.logspace(3,9,4)
-    interpolated = lorentzian.interp1(fi)
+    interpolated = lorentzian.eval_func(fi)
     ldbc_equation = 10 * np.log10(1 / (fi * fi))
     assert_almost_equal(ldbc_equation, interpolated.ldbc, 4)
     if plot:
@@ -288,7 +286,21 @@ def test_private_functions(plot=False):
     assert_almost_equal(ldbc_1, ldbc_fi[1], 0)
 
 
+def test_with_points_slopes(plot=False):
+    # test the new
+    fi = np.array([1e4, 1e9])
+    ldbc_fi = np.array([-40, -150])
+    slopes = np.array([-30, -20])
+    pnoise_model = Pnoise.with_points_slopes(fi, ldbc_fi, slopes)
+    fm = np.logspace(3, 9, 20)
+    pnoise_extrapolated = pnoise_model.eval_func(fm)
+    if plot:
+        pnoise_model.plot('o')
+        pnoise_extrapolated.plot()
+        plt.show()
+
 if __name__ == "__main__":
     test__init__(plot=False)
     test_private_functions(plot=False)
     test_with_interpolation(plot=False)
+    test_with_points_slopes(plot=True)
