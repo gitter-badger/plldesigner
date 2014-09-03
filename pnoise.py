@@ -4,14 +4,10 @@ A Class to work with phase noise frequency data points
 """
 
 from __future__ import (absolute_import, division, print_function)
-
 import numpy as np
 from numpy import log10, sqrt, sum
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
-
-
-""" Help functions  """
 
 
 # functions to handle the units
@@ -24,16 +20,8 @@ __funits__ = {
 
 class Pnoise(object):
     """
-This is class defines objects and operations over phase noise values
-There are different types of input functions:
-    Pnoise(fm,ldbc)
-    Pnoise(fm,ldbc,label='label')
-    Pnoise(fm,phi,units='rad/sqrt(Hz)'
-    The options of units are:
-        dBc/Hz (default)
-        rad/sqrt(Hz)
-        rad**2/Hz
-        """
+    Phase noise class to manipulate phase noise data in the frequency offset format
+    """
 
     def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
         """
@@ -157,13 +145,25 @@ There are different types of input functions:
             return mult_noise
 
     def integrate(self, fl=None, fh=None, method='trapz'):
-        """Returns the integrated phase noise in rad over the limits fl,fh
-        Uses the Gardner algorithm.
+        """ Returns the integrated phase noise in (rad/rms)
+
+            Parameters
+            ----------
+            fl
+            fh
+            method
+
         """
 
         def gardner(ldbc_ix, fm_ix):
-            """ This is the Garder book integration method for the phase noise
-            that does not work always with measurements or data"""
+            """ Gardner integration method
+
+                Parameters
+                ----------
+                ldbc_ix
+                fm_ix
+
+            """
             lfm = len(ldbc_ix)
             # calculate the slope
             ai = ((ldbc_ix[1:lfm] - ldbc_ix[:lfm - 1]) /
@@ -178,6 +178,13 @@ There are different types of input functions:
             return sqrt(sum(bi))
 
         def trapz(ldbc_ix, fm_ix):
+            """ Trapezoidal integration of the phase noise
+
+                Parameters
+                ----------
+                ldbc_ix
+                fm_ix
+            """
             phi_2 = 2 * 10 ** (ldbc_ix / 10)
             return sqrt(np.trapz(phi_2, fm_ix))
 
@@ -198,7 +205,13 @@ There are different types of input functions:
 
 
 def __pnoise_interp1d__(fi, ldbc_fi, fm):
-    '''Redifine the ordinate from the new fm to fi'''
+    """ Interpolate the phase noise assuming logaritmic linear behavior
+
+        Parameters
+        ---------
+        fi:
+
+    """
     func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
     ldbc = func_intp(log10(fm))
     return ldbc
