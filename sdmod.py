@@ -29,21 +29,21 @@ class SDModulator(object):
         xval = np.arange(len(self.seq))
         plt.step(xval, self.seq, *arg, **argk)
 
-    def LdB_theoretical(self, fm, fref, N=1.0):
+    def LdB_theoretical(self, fm, fref, n=1.0):
         func = {'mash': L_mash_dB}
-        return func[self.modtype](fm, fref, N)
+        return func[self.modtype](fm, fref, n)
 
 
-def gen_mash(order, N, K, init=()):
+def gen_mash(order, n, k, init=()):
     """ Generates a mash type $\Sigma-\Delta$ sequence
 
     Parameters
     ----------
     order : int
         order of the $\Sigma-\Delta$ modulator.
-    N : int
+    n : int
         Number of bits of the modulator.
-    K : int
+    k : int
         Value being converted
     init: tuple
         init is a tuple that initialize the register of the
@@ -68,8 +68,8 @@ def gen_mash(order, N, K, init=()):
     assert 1 <= order <= 4, 'This orders have not been implemented'
 
     # Modulator of order 1
-    _maxvalue = 2 ** N - 1
-    L = len(K)
+    _maxvalue = 2 ** n - 1
+    L = len(k)
     if order == 1:
         # initialize the registers
         over0 = zeros(L, dtype=np.int)
@@ -78,7 +78,7 @@ def gen_mash(order, N, K, init=()):
         if len(init) == 1:
             stat0[0] = init[0]
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + K[j - 1]
+            stat0[j] = stat0[j - 1] + k[j - 1]
             if stat0[j] > _maxvalue:
                 over0[j] = 1
                 stat0[j] -= _maxvalue + 1
@@ -102,7 +102,7 @@ def gen_mash(order, N, K, init=()):
 
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + K[j - 1]
+            stat0[j] = stat0[j - 1] + k[j - 1]
             if stat0[j] > _maxvalue:
                 over0[j] = 1
                 stat0[j] -= _maxvalue + 1
@@ -135,7 +135,7 @@ def gen_mash(order, N, K, init=()):
 
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + K[j - 1]
+            stat0[j] = stat0[j - 1] + k[j - 1]
             if stat0[j] > _maxvalue:
                 over0[j] = 1
                 stat0[j] -= _maxvalue + 1
@@ -179,7 +179,7 @@ def gen_mash(order, N, K, init=()):
         over3 = zeros(L, dtype=np.int)
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + K[j - 1]
+            stat0[j] = stat0[j - 1] + k[j - 1]
             if stat0[j] > _maxvalue:
                 over0[j] = 1
                 stat0[j] -= _maxvalue + 1
@@ -205,7 +205,7 @@ def gen_mash(order, N, K, init=()):
               over3 - 3 * np.hstack(([0], over3[:-1])) +
               3 * np.hstack(([0], [0], over3[:-2])) -
               np.hstack(([0], [0], [0], over3[:-3]))
-        )
+              )
 
         stat = stat0 + stat1 + stat2 + stat3
         cycles = np.where(stat == 0)[0]
@@ -217,7 +217,7 @@ def gen_mash(order, N, K, init=()):
     return sd, cycles
 
 
-def L_mash_dB(m, fm, fref, N=1.0):
+def L_mash_dB(m, fm, fref, n=1.0):
     """ Phase noise theoretical value of noise produced by a mash111 SDM
 
     This procedure calculates the noise at the output of the SD modulator
@@ -231,14 +231,14 @@ def L_mash_dB(m, fm, fref, N=1.0):
     fref : float
         Reference frequency that is used to compare the output of the SD
         modulator
-    N: float
+    n: float
         It is the average division ratio.
 
     return
     ------
     ldbc :
     """
-    return 10 * log10((2 * pi) ** 2 / (12 * fref) * (2 * sin(pi * fm / fref)) ** (2 * (m - 1)) / N ** 2)
+    return 10 * log10((2 * pi) ** 2 / (12 * fref) * (2 * sin(pi * fm / fref)) ** (2 * (m - 1)) / n ** 2)
 
 
 if __name__ == "__main__":
