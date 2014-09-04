@@ -25,8 +25,6 @@ class Pnoise(object):
     Parameters
     ----------
 
-
-
     Atributes
     ---------
 
@@ -57,6 +55,7 @@ class Pnoise(object):
         self.ldbc_fi = None
         self.slopes = None
         self.func_ldbc = None
+        self.phi_out = None
 
         self.ldbc = __funits__[units](np.array(pnfm))
 
@@ -211,9 +210,9 @@ class Pnoise(object):
             phi_2 = 2 * 10 ** (ldbc_ix / 10)
             return sqrt(np.trapz(phi_2, fm_ix))
 
-        if fl == None:
+        if fl is None:
             fl = min(self.fm)
-        if fh == None:
+        if fh is None:
             fh = max(self.fm)
         ix = (self.fm >= fl) & (self.fm <= fh)
         fi = self.fm[ix]
@@ -317,7 +316,7 @@ def test_with_interpolation(plot=False):
         plt.show()
 
 
-def test_private_functions(plot=False):
+def test_private_functions():
     # test the new
     fi = np.array([1e4, 1e9])
     ldbc_fi = np.array([-40, -150])
@@ -347,6 +346,6 @@ def test_with_points_slopes(plot=False):
 
 if __name__ == "__main__":
     test__init__(plot=False)
-    test_private_functions(plot=False)
+    test_private_functions()
     test_with_interpolation(plot=False)
     test_with_points_slopes(plot=False)
