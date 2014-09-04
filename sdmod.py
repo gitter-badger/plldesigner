@@ -11,7 +11,7 @@ class SDModulator(object):
     """ Creates a Sigma-Delta modulator object
 
     Parameters
-    ==========
+    ----------
     modtype : string
         type of SDModulator implemented types are:
         ('mash')
@@ -231,6 +231,10 @@ def L_mash_dB(m, fm, fref, N=1.0):
         modulator
     N: float
         It is the average division ratio.
+
+    return
+    ------
+    ldbc :
     """
     return 10*log10((2*pi)**2/(12*fref)*(2*sin(pi*fm/fref))**(2*(m-1))/N**2)
 
