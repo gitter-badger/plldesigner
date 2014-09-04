@@ -21,6 +21,16 @@ __funits__ = {
 class Pnoise(object):
     """
     Phase noise class to manipulate phase noise data in the frequency offset format
+
+    Parameters
+    ----------
+
+
+
+    Atributes
+    ---------
+
+
     """
 
     def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
@@ -149,9 +159,13 @@ class Pnoise(object):
 
             Parameters
             ----------
-            fl
-            fh
-            method
+            fl :
+            fh :
+            method :
+
+            Returns
+            -------
+            phi_out :
 
         """
 
@@ -160,8 +174,12 @@ class Pnoise(object):
 
                 Parameters
                 ----------
-                ldbc_ix
-                fm_ix
+                ldbc_ix :
+                fm_ix :
+
+                Returns
+                -------
+                phi_sqrt :
 
             """
             lfm = len(ldbc_ix)
@@ -182,8 +200,13 @@ class Pnoise(object):
 
                 Parameters
                 ----------
-                ldbc_ix
-                fm_ix
+                ldbc_ix :
+                fm_ix :
+
+                Returns
+                -------
+                phi_out :
+
             """
             phi_2 = 2 * 10 ** (ldbc_ix / 10)
             return sqrt(np.trapz(phi_2, fm_ix))
@@ -209,7 +232,11 @@ def __pnoise_interp1d__(fi, ldbc_fi, fm):
 
         Parameters
         ---------
-        fi:
+        fi :
+
+        Returns
+        ----------
+        ldbc :
 
     """
     func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
@@ -220,11 +247,18 @@ def __pnoise_interp1d__(fi, ldbc_fi, fm):
 def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
     """
     Function to evaluate a asymptotic model of the phase noise
-    :param fi:
-    :param slopes:
-    :param ldbc:
-    :param fm:
-    :return: function
+
+    Parameters
+    ----------
+    fi :
+    slopes :
+    ldbc_fi :
+    fm :
+
+    returns
+    -------
+    ldbc_fm :
+
     """
     phi2 = 2 * 10 ** (ldbc_fi / 10)
     phi2 = phi2.reshape((1, len(phi2)))
