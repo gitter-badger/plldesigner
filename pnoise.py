@@ -102,10 +102,12 @@ class Pnoise(object):
         ----------
         fi : array_like
             Array with the offsets frequencies of the phase noise values
+        ldbc_fi : array_like
+            Array with the phase noise values at the fi frequencies
         slopes : array_like
             Array with slopes of the values that are interpolated (dBc/dec)
-        ldbc : array_like
-            Array with the phase noise values at the fi frequencies
+        label : str
+            Plotting label
 
         Returns
         -------
