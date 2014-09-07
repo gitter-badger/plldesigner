@@ -72,18 +72,18 @@ def gen_mash(order, n, k, init=()):
     L = len(k)
     if order == 1:
         # initialize the registers
-        over0 = zeros(L, dtype=np.int)
-        over0[0] = 1
-        stat0 = zeros(L, dtype=np.int)
+        overflow0 = zeros(L, dtype=np.int)
+        overflow0[0] = 1
+        state0 = zeros(L, dtype=np.int)
         if len(init) == 1:
-            stat0[0] = init[0]
+            state0[0] = init[0]
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + k[j - 1]
-            if stat0[j] > _maxvalue:
-                over0[j] = 1
-                stat0[j] -= _maxvalue + 1
-        sd = over0
-        cycles = np.where(stat0 == 0)[0]
+            state0[j] = state0[j - 1] + k[j - 1]
+            if state0[j] > _maxvalue:
+                overflow0[j] = 1
+                state0[j] -= _maxvalue + 1
+        sd = overflow0
+        cycles = np.where(state0 == 0)[0]
         if len(cycles) > 1:
             cycles = cycles[1] - cycles[0]
         else:
@@ -92,27 +92,27 @@ def gen_mash(order, n, k, init=()):
     # Modulator of order 2
     elif order == 2:
         # initialize the registers
-        stat0 = zeros(L, dtype=np.int)
-        stat1 = zeros(L, dtype=np.int)
-        over0 = zeros(L, dtype=np.int)
-        over1 = zeros(L, dtype=np.int)
+        state0 = zeros(L, dtype=np.int)
+        state1 = zeros(L, dtype=np.int)
+        overflow0 = zeros(L, dtype=np.int)
+        overflow1 = zeros(L, dtype=np.int)
         if len(init) == 2:
-            stat0[0] = init[0]
-            stat1[0] = init[1]
+            state0[0] = init[0]
+            state1[0] = init[1]
 
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + k[j - 1]
-            if stat0[j] > _maxvalue:
-                over0[j] = 1
-                stat0[j] -= _maxvalue + 1
-            stat1[j] = stat1[j - 1] + stat0[j]
-            if stat1[j] > _maxvalue:
-                over1[j] = 1
-                stat1[j] -= _maxvalue + 1
-        sd = over0 + over1 - np.hstack(([0], over1[:-1]))
-        stat = stat0 + stat1
-        cycles = np.where(stat == 0)[0]
+            state0[j] = state0[j - 1] + k[j - 1]
+            if state0[j] > _maxvalue:
+                overflow0[j] = 1
+                state0[j] -= _maxvalue + 1
+            state1[j] = state1[j - 1] + state0[j]
+            if state1[j] > _maxvalue:
+                overflow1[j] = 1
+                state1[j] -= _maxvalue + 1
+        sd = overflow0 + overflow1 - np.hstack(([0], overflow1[:-1]))
+        state = state0 + state1
+        cycles = np.where(state == 0)[0]
         if len(cycles) > 1:
             cycles = cycles[1] - cycles[0]
         else:
@@ -121,41 +121,41 @@ def gen_mash(order, n, k, init=()):
     # Modulator of order 3
     elif order == 3:
         # initialize the registers
-        stat0 = zeros(L, dtype=np.int)
-        stat1 = zeros(L, dtype=np.int)
-        stat2 = zeros(L, dtype=np.int)
+        state0 = zeros(L, dtype=np.int)
+        state1 = zeros(L, dtype=np.int)
+        state2 = zeros(L, dtype=np.int)
         if len(init) == 3:
-            stat0[0] = init[0]
-            stat1[0] = init[1]
-            stat2[0] = init[2]
-        over0 = zeros(L, dtype=np.int)
-        over0[0] = 1
-        over1 = zeros(L, dtype=np.int)
-        over2 = zeros(L, dtype=np.int)
+            state0[0] = init[0]
+            state1[0] = init[1]
+            state2[0] = init[2]
+        overflow0 = zeros(L, dtype=np.int)
+        overflow0[0] = 1
+        overflow1 = zeros(L, dtype=np.int)
+        overflow2 = zeros(L, dtype=np.int)
 
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + k[j - 1]
-            if stat0[j] > _maxvalue:
-                over0[j] = 1
-                stat0[j] -= _maxvalue + 1
+            state0[j] = state0[j - 1] + k[j - 1]
+            if state0[j] > _maxvalue:
+                overflow0[j] = 1
+                state0[j] -= _maxvalue + 1
 
-            stat1[j] = stat1[j - 1] + stat0[j]
-            if stat1[j] > _maxvalue:
-                over1[j] = 1
-                stat1[j] -= _maxvalue + 1
+            state1[j] = state1[j - 1] + state0[j]
+            if state1[j] > _maxvalue:
+                overflow1[j] = 1
+                state1[j] -= _maxvalue + 1
 
-            stat2[j] = stat2[j - 1] + stat1[j]
-            if stat2[j] > _maxvalue:
-                over2[j] = 1
-                stat2[j] -= _maxvalue + 1
-        sd = over0
-        sd += over1 - np.hstack(([0], over1[:-1]))
-        sd += over2 - 2 * np.hstack(([0], over2[:-1]))
-        sd += np.hstack(([0], [0], over2[:-2]))
+            state2[j] = state2[j - 1] + state1[j]
+            if state2[j] > _maxvalue:
+                overflow2[j] = 1
+                state2[j] -= _maxvalue + 1
+        sd = overflow0
+        sd += overflow1 - np.hstack(([0], overflow1[:-1]))
+        sd += overflow2 - 2 * np.hstack(([0], overflow2[:-1]))
+        sd += np.hstack(([0], [0], overflow2[:-2]))
 
-        stat = stat0 + stat1 + stat2
-        cycles = np.where(stat == 0)[0]
+        state = state0 + state1 + state2
+        cycles = np.where(state == 0)[0]
         if len(cycles) > 1:
             cycles = cycles[1] - cycles[0]
         else:
@@ -163,52 +163,52 @@ def gen_mash(order, n, k, init=()):
 
     elif order == 4:
         # initialize the registers
-        stat0 = zeros(L, dtype=np.int)
-        stat1 = zeros(L, dtype=np.int)
-        stat2 = zeros(L, dtype=np.int)
-        stat3 = zeros(L, dtype=np.int)
+        state0 = zeros(L, dtype=np.int)
+        state1 = zeros(L, dtype=np.int)
+        state2 = zeros(L, dtype=np.int)
+        state3 = zeros(L, dtype=np.int)
         if len(init) == 4:
-            stat0[0] = init[0]
-            stat1[0] = init[1]
-            stat2[0] = init[2]
-            stat3[0] = init[4]
-        over0 = zeros(L, dtype=np.int)
-        over0[0] = 1
-        over1 = zeros(L, dtype=np.int)
-        over2 = zeros(L, dtype=np.int)
-        over3 = zeros(L, dtype=np.int)
+            state0[0] = init[0]
+            state1[0] = init[1]
+            state2[0] = init[2]
+            state3[0] = init[4]
+        overflow0 = zeros(L, dtype=np.int)
+        overflow0[0] = 1
+        overflow1 = zeros(L, dtype=np.int)
+        overflow2 = zeros(L, dtype=np.int)
+        overflow3 = zeros(L, dtype=np.int)
         # Implement the SDM
         for j in arange(1, L):
-            stat0[j] = stat0[j - 1] + k[j - 1]
-            if stat0[j] > _maxvalue:
-                over0[j] = 1
-                stat0[j] -= _maxvalue + 1
+            state0[j] = state0[j - 1] + k[j - 1]
+            if state0[j] > _maxvalue:
+                overflow0[j] = 1
+                state0[j] -= _maxvalue + 1
 
-            stat1[j] = stat1[j - 1] + stat0[j]
-            if stat1[j] > _maxvalue:
-                over1[j] = 1
-                stat1[j] -= _maxvalue + 1
+            state1[j] = state1[j - 1] + state0[j]
+            if state1[j] > _maxvalue:
+                overflow1[j] = 1
+                state1[j] -= _maxvalue + 1
 
-            stat2[j] = stat2[j - 1] + stat1[j]
-            if stat2[j] > _maxvalue:
-                over2[j] = 1
-                stat2[j] -= _maxvalue + 1
-            stat3[j] = stat3[j - 1] + stat2[j]
-            if stat3[j] > _maxvalue:
-                over3[j] = 1
-                stat3[j] -= _maxvalue + 1
+            state2[j] = state2[j - 1] + state1[j]
+            if state2[j] > _maxvalue:
+                overflow2[j] = 1
+                state2[j] -= _maxvalue + 1
+            state3[j] = state3[j - 1] + state2[j]
+            if state3[j] > _maxvalue:
+                overflow3[j] = 1
+                state3[j] -= _maxvalue + 1
 
-        sd = (over0 +
-              over1 - np.hstack(([0], over1[:-1])) +
-              over2 - 2 * np.hstack(([0], over2[:-1])) +
-              np.hstack(([0], [0], over2[:-2])) +
-              over3 - 3 * np.hstack(([0], over3[:-1])) +
-              3 * np.hstack(([0], [0], over3[:-2])) -
-              np.hstack(([0], [0], [0], over3[:-3]))
+        sd = (overflow0 +
+              overflow1 - np.hstack(([0], overflow1[:-1])) +
+              overflow2 - 2 * np.hstack(([0], overflow2[:-1])) +
+              np.hstack(([0], [0], overflow2[:-2])) +
+              overflow3 - 3 * np.hstack(([0], overflow3[:-1])) +
+              3 * np.hstack(([0], [0], overflow3[:-2])) -
+              np.hstack(([0], [0], [0], overflow3[:-3]))
               )
 
-        stat = stat0 + stat1 + stat2 + stat3
-        cycles = np.where(stat == 0)[0]
+        state = state0 + state1 + state2 + state3
+        cycles = np.where(state == 0)[0]
         if len(cycles) > 1:
             cycles = cycles[1] - cycles[0]
         else:
