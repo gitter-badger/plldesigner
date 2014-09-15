@@ -8,7 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy import sqrt, log10, tan
 import scipy.constants as k
-from  .pnoise import Pnoise
+from .pnoise import Pnoise
 
 class AnalogPLL(object):
     def __init__(self, order, Kvco, Navg=1.0, prescaler=1, plltype='integer',
@@ -103,8 +103,6 @@ class AnalogPLL(object):
         Hfm, Gfm, Tfm = self.calcTF(fm)
 
 
-
-
     def filter_vn2(self, fm, Temp=300.13):
         fvals = self.filter_vals
         s = 2*k.pi*fm*1j
@@ -127,7 +125,7 @@ class AnalogPLL(object):
     def pnoise_calc(Lin_ref, Lout_ref, fm, Mult=1, Div=1):
         phi2_in_ref = 2 * 10 ** (Lin_ref / 10)
         Hfm = repmat(Hfm, size(phi2_in_ref, 1), 1)
-        phi2_in_ref = phi2_in_ref * abs(Hfm) ** 2
+        phi2_in_ref *= abs(Hfm) ** 2
         Lin_ref = 10 * log10(phi2_in_ref / 2) + 20 * log10(Mult) + 20 * log10(1 / Div)
         # Filter the noise of  the output referred sources
         phi2_out_ref = 2*10 ** (Lout_ref / 10)
