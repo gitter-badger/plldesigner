@@ -38,7 +38,7 @@ class AnalogPLL(object):
         self.Lvco_fr, self.DL, self.Temp = Lvco_fr, DL, Temp
         Kvco = self.Kvco
         # phisical constants
-        if self.order==2:
+        if self.order == 2:
             b = (tan(pm * k.pi / 180 / 2 + k.pi /4)) ** 2
             wc = 2 * k.pi * fc
             wp = wc * sqrt(b)
@@ -51,8 +51,8 @@ class AnalogPLL(object):
             C2 = tz * tp / R1 / (tz - tp)
             Icp = (2 * k.pi * self.Navg * fc * b) / (R1 * Kvco * (b - 1))
             self.filter_vals = {'C1' : C1, 'C2' : C2, 'R1' : R1, 'Icp' : Icp}
-        if self.order==3:
-            b = (tan( pm * k.pi / 180 / 2 + k.pi / 4)) ** 2
+        if self.order == 3:
+            b = (tan(pm * k.pi / 180 / 2 + k.pi / 4)) ** 2
             wc = 2 * k.pi * fc
             wp = wc * sqrt(b)
             wz = wc / sqrt(b)
@@ -62,7 +62,7 @@ class AnalogPLL(object):
             R1 = (10 ** (DL / 10) - 1) / ((b - 1) / b)/(4 * k.k * Temp * Kvco ** 2) * phi_fm ** 2 * Lvco_fr ** 2
             C1 = tz / R1
             C2 = tz * tp / R1 / (tz - tp)
-            Icp = (2 * k.pi *self.Navg * fc * b) / (R1 * Kvco * (b-1))
+            Icp = (2 * k.pi * self.Navg * fc * b) / (R1 * Kvco * (b-1))
             tp2 = tp / 10
             C3 = C2 / 10 # C2 should not be that big
             R2 = tp2 / C3
