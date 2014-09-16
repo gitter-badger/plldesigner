@@ -35,7 +35,7 @@ There are different types of input functions:
         rad**2/Hz
         """
 
-    def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
+    def __init__(self, fm, pnfm, label=None, units='dBc/Hz', interpolate=False):
         """
         Phase noise from separate vectors for fm and phase noise
 
@@ -55,8 +55,6 @@ There are different types of input functions:
         self.fm = np.array(fm)
 
         # values for point slope approximation
-        self.fi = None
-        self.ldbc_fi = None
         self.slopes = None
         self.func_ldbc=None
 
@@ -64,9 +62,7 @@ There are different types of input functions:
 
     @classmethod
     def with_interpolation(cls, fm, pnfm, label=None, units='dBc/Hz'):
-        pnoise_class = cls(None, None, label=label, units='dBc/Hz')
-        pnoise_class.fm = fm
-        pnoise_class.ldbc = __funits__[units](np.array(pnfm))
+        pnoise_class = cls(fm, pnfm, label=label, units=units)
         try:
             pnoise_class.func_ldbc = lambda fx : __pnoise_interp1d__(fm, pnoise_class.ldbc, fx)
         except:
@@ -124,6 +120,15 @@ There are different types of input functions:
     def eval_func(self, fx):
         pnoise_class = Pnoise(fx, self.func_ldbc(fx),label=self.label)
         return pnoise_class
+    
+    def set_fm(self,fm):
+        try:
+            func_ldbc = lambda fx : __pnoise_interp1d__(self.fm, self.ldbc, fx)
+            self.ldbc = func_ldbc(fm)
+            self.fm = fm
+        except:
+            raise Exception('The interpolation could not be done')
+        return
 
     def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
@@ -199,7 +204,7 @@ There are different types of input functions:
 
 
 def __pnoise_interp1d__(fi, ldbc_fi, fm):
-    '''Redifine the ordinate from the new fm to fi'''
+    '''Redefine the ordinate from the new fm to fi'''
     func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
     ldbc = func_intp(log10(fm))
     return ldbc
@@ -298,9 +303,22 @@ def test_with_points_slopes(plot=False):
         pnoise_model.plot('o')
         pnoise_extrapolated.plot()
         plt.show()
+def test_old_fasion_interpolation(plot=False):
+    fi = np.array([1e4, 1e9])
+    ldbc_fi = np.array([-40, -150])
+    pnoise_model = Pnoise(fi, ldbc_fi)
+    pnoise_model_old = pnoise_model
+    fm = np.logspace(4,9,100)
+    fm = pnoise_model.set_fm(fm)
+    if plot:
+        print(pnoise_model_old.fm.shape)
+        print(pnoise_model_old.ldbc.shape)
+        pnoise_model_old.plot()
+        pnoise_model.plot()
 
 if __name__ == "__main__":
     test__init__(plot=False)
     test_private_functions(plot=False)
     test_with_interpolation(plot=False)
-    test_with_points_slopes(plot=True)
+    test_with_points_slopes(plot=False)
+    test_old_fasion_interpolation(plot=True)
