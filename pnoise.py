@@ -52,8 +52,6 @@ class Pnoise(object):
         self.fm = np.array(fm)
 
         # values for point slope approximation
-        self.fi = None
-        self.ldbc_fi = None
         self.slopes = None
         self.func_ldbc = None
         self.phi_out = None
@@ -121,6 +119,16 @@ class Pnoise(object):
         pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(
             fi, ldbc_fi, slopes, fm)
         return pnoise_class
+
+    def set_fm(self, fi):
+        """
+        :param fi:
+        :return:
+        """
+        self.func_ldbc =  lambda fx: __pnoise_interp1d__(
+                self.fm, self.ldbc, fx)
+        self.ldbc = self.func_ldbc(fi)
+        self.fm = fi
 
     def eval_func(self, fx):
         pnoise_class = Pnoise(fx, self.func_ldbc(fx), label=self.label)
