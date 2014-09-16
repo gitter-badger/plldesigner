@@ -8,7 +8,7 @@ from __future__ import (absolute_import, division, print_function)
 import numpy as np
 from numpy import sqrt, log10, tan
 import scipy.constants as k
-from  .pnoise import Pnoise
+from .pnoise import Pnoise
 
 class AnalogPLL(object):
     def __init__(self, order, Kvco, Navg=1.0, prescaler=1, plltype='integer',
@@ -38,7 +38,7 @@ class AnalogPLL(object):
         self.Lvco_fr, self.DL, self.Temp = Lvco_fr, DL, Temp
         Kvco = self.Kvco
         # phisical constants
-        if self.order==2:
+        if self.order == 2:
             b = (tan(pm * k.pi / 180 / 2 + k.pi /4)) ** 2
             wc = 2 * k.pi * fc
             wp = wc * sqrt(b)
@@ -51,8 +51,8 @@ class AnalogPLL(object):
             C2 = tz * tp / R1 / (tz - tp)
             Icp = (2 * k.pi * self.Navg * fc * b) / (R1 * Kvco * (b - 1))
             self.filter_vals = {'C1' : C1, 'C2' : C2, 'R1' : R1, 'Icp' : Icp}
-        if self.order==3:
-            b = (tan( pm * k.pi / 180 / 2 + k.pi / 4)) ** 2
+        if self.order == 3:
+            b = (tan(pm * k.pi / 180 / 2 + k.pi / 4)) ** 2
             wc = 2 * k.pi * fc
             wp = wc * sqrt(b)
             wz = wc / sqrt(b)
@@ -62,7 +62,7 @@ class AnalogPLL(object):
             R1 = (10 ** (DL / 10) - 1) / ((b - 1) / b)/(4 * k.k * Temp * Kvco ** 2) * phi_fm ** 2 * Lvco_fr ** 2
             C1 = tz / R1
             C2 = tz * tp / R1 / (tz - tp)
-            Icp = (2 * k.pi *self.Navg * fc * b) / (R1 * Kvco * (b-1))
+            Icp = (2 * k.pi * self.Navg * fc * b) / (R1 * Kvco * (b-1))
             tp2 = tp / 10
             C3 = C2 / 10 # C2 should not be that big
             R2 = tp2 / C3
@@ -103,8 +103,6 @@ class AnalogPLL(object):
         Hfm, Gfm, Tfm = self.calcTF(fm)
 
 
-
-
     def filter_vn2(self, fm, Temp=300.13):
         fvals = self.filter_vals
         s = 2*k.pi*fm*1j
@@ -127,7 +125,7 @@ class AnalogPLL(object):
     def pnoise_calc(Lin_ref, Lout_ref, fm, Mult=1, Div=1):
         phi2_in_ref = 2 * 10 ** (Lin_ref / 10)
         Hfm = repmat(Hfm, size(phi2_in_ref, 1), 1)
-        phi2_in_ref = phi2_in_ref * abs(Hfm) ** 2
+        phi2_in_ref *= abs(Hfm) ** 2
         Lin_ref = 10 * log10(phi2_in_ref / 2) + 20 * log10(Mult) + 20 * log10(1 / Div)
         # Filter the noise of  the output referred sources
         phi2_out_ref = 2*10 ** (Lout_ref / 10)

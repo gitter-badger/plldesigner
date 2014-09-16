@@ -2,8 +2,8 @@ plldesigner
 ===========
 
 
-A pythonic tool for PLL design and exploration (focused in PLLs implemented in hardware). More information can be found in [Phase Unlocked](http://jfosorio.github.io/). The final propose of this project is to have a complete design tool for PLL (Phase-locked loops) by creating a class that permits definer the different elements this class would eventually implement methods to:
-* Analise the loop stability (that should be easy with scipy.signal)
+A pythonic tool for PLL design and exploration (focused in PLLs implemented in hardware). More information can be found in [Phase Unlocked](http://jfosorio.github.io/). The final propose of this project is to have a complete design tool for PLL's (Phase-locked loops). It proposes a class that allows to:
+* Analyze the loop stability 
 * Specify the noise sources and calculate the overall noise
   - Using PWL file (trivial)
   - using the noise at 1Hz for the different components $1/f^0$,$1/f$,$1/f^2$,$1/f^3$ (not so usefull)
@@ -17,11 +17,12 @@ A pythonic tool for PLL design and exploration (focused in PLLs implemented in h
 Status
 ======
 
-Currently this is in a embrionic state, for the first two bullets I understand what has to be done and I have a relativly complete software in Matlab that I have developed. Regarding the third bullet I have been thinking in different alternatives: generate veriloga code, generate modelica code, generate pure C++ or Cython code.
+Currently a first version is available The first two bullets are already cover. Regarding the third bullet I have been thinking in different alternatives: generate veriloga code, generate modelica code, generate pure C++ or Cython code.
 
 
-Develoment plan
+Development plan
 ================
+
 
 * Create the class structure to specify the noise,  the pnoise object, there have to be different init elements:
   1. Noise, specially for oscillator can be specified as $f_n/fm^{-n}+f_{n=1}/fm^{-n+1}+$ (done)
@@ -32,14 +33,14 @@ Develoment plan
   6. Plot several noise sources and the resultant 
 * LTI model of the PLL
   1. Second order approximation (Done)
-  2. Phase margin plot ... 
+  2. Phase margin plot (To be Done)
   2. Timing vs phase  margin and error
   3. phase noise optimization 
 * Use the design routines:
   1. Given fc and R (or the DN)  calculate the filter (done)
   2. Specify 
 * Spectrum routines. (Those are not specifically needed only for this project but for others In any case can help in the implementation of the CP-PFD model) (I studied it
-  pwell is enough)
+  pwell is enough) (Done)
 * Circuit simulator
   1. First version with a fix step
      -CP is a big impulse as proposed by Perrot

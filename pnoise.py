@@ -4,14 +4,10 @@ A Class to work with phase noise frequency data points
 """
 
 from __future__ import (absolute_import, division, print_function)
-
 import numpy as np
 from numpy import log10, sqrt, sum
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
-
-
-""" Help functions  """
 
 
 # functions to handle the units
@@ -19,23 +15,24 @@ __funits__ = {
     "dBc/Hz": lambda x: x,
     "rad/sqrt(Hz)": lambda x: 10 * log10(x ** 2 / 2),
     "rad**/Hz": lambda x: 10 * log10(x / 2),
-    }
+}
 
 
 class Pnoise(object):
     """
-This is class defines objects and operations over phase noise values
-There are different types of input functions:
-    Pnoise(fm,ldbc)
-    Pnoise(fm,ldbc,label='label')
-    Pnoise(fm,phi,units='rad/sqrt(Hz)'
-    The options of units are:
-        dBc/Hz (default)
-        rad/sqrt(Hz)
-        rad**2/Hz
-        """
+    Phase noise class to manipulate phase noise data in the frequency offset
+    format
 
-    def __init__(self, fm, pnfm, label=None, units='dBc/Hz', interpolate=False):
+    Parameters
+    ----------
+
+    Atributes
+    ---------
+
+
+    """
+
+    def __init__(self, fm, pnfm, label=None, units='dBc/Hz'):
         """
         Phase noise from separate vectors for fm and phase noise
 
@@ -55,20 +52,25 @@ There are different types of input functions:
         self.fm = np.array(fm)
 
         # values for point slope approximation
+        self.fi = None
+        self.ldbc_fi = None
         self.slopes = None
-        self.func_ldbc=None
+        self.func_ldbc = None
+        self.phi_out = None
 
         self.ldbc = __funits__[units](np.array(pnfm))
 
     @classmethod
     def with_interpolation(cls, fm, pnfm, label=None, units='dBc/Hz'):
-        pnoise_class = cls(fm, pnfm, label=label, units=units)
+        pnoise_class = cls(None, None, label=label, units='dBc/Hz')
+        pnoise_class.fm = fm
+        pnoise_class.ldbc = __funits__[units](np.array(pnfm))
         try:
-            pnoise_class.func_ldbc = lambda fx : __pnoise_interp1d__(fm, pnoise_class.ldbc, fx)
-        except:
-            pnoise_class.func_ldbc = None
+            pnoise_class.func_ldbc = lambda fx: __pnoise_interp1d__(
+                fm, pnoise_class.ldbc, fx)
+        except ValueError:
+            raise ValueError('The function can not be interpolated')
         return pnoise_class
-
 
     @classmethod
     def with_function(cls, func, label=None):
@@ -78,8 +80,8 @@ There are different types of input functions:
         Parameters
         ----------
         func : function
-            A Python function representing the phase noise and function of the
-            frequency offset: ldbc = func(fm) (dBc/Hz)
+            A Python function representing the phase noise and function of
+            the frequency offset: ldbc = func(fm) (dBc/Hz)
         label : string
             Name of the phase noise value
 
@@ -102,10 +104,12 @@ There are different types of input functions:
         ----------
         fi : array_like
             Array with the offsets frequencies of the phase noise values
+        ldbc_fi : array_like
+            Array with the phase noise values at the fi frequencies
         slopes : array_like
             Array with slopes of the values that are interpolated (dBc/dec)
-        ldbc : array_like
-            Array with the phase noise values at the fi frequencies
+        label : str
+            Plotting label
 
         Returns
         -------
@@ -114,21 +118,13 @@ There are different types of input functions:
         """
         pnoise_class = cls(fi, ldbc_fi, label=label, units='dBc/Hz')
         pnoise_class.slopes = slopes
-        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm)
+        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(
+            fi, ldbc_fi, slopes, fm)
         return pnoise_class
 
     def eval_func(self, fx):
-        pnoise_class = Pnoise(fx, self.func_ldbc(fx),label=self.label)
+        pnoise_class = Pnoise(fx, self.func_ldbc(fx), label=self.label)
         return pnoise_class
-    
-    def set_fm(self,fm):
-        try:
-            func_ldbc = lambda fx : __pnoise_interp1d__(self.fm, self.ldbc, fx)
-            self.ldbc = func_ldbc(fm)
-            self.fm = fm
-        except:
-            raise Exception('The interpolation could not be done')
-        return
 
     def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
@@ -138,73 +134,124 @@ There are different types of input functions:
         return ax
 
     def __add__(self, other):
-        ''' Addition of though pnoise components '''
+        """ Addition of though pnoise components """
         try:
             phi2fm = 2 * 10 ** (self.ldbc / 10)
             phi2fm_other = 2 * 10 ** (other.ldbc / 10)
             ldbc_add = 10 * log10((phi2fm + phi2fm_other) / 2)
-        except ValueError as er:
-            print('Additions is only allowed with vector of equal size')
+        except ValueError:
+            raise ValueError(
+                'Additions is only allowed with vector of equal size'
+                )
         add_noise = Pnoise(self.fm, ldbc_add)
         return add_noise
 
     def __mul__(self, mult):
-        ''' Multiplication of noise by a constant '''
+        """ Multiplication of noise by a constant """
         if type(mult) not in (int, float, np.ndarray):
             raise TypeError('unsupported operand type(s) for mult')
         else:
             if type(mult) in (int, float):
-                mult_noise = Pnoise(self.fm, self.ldbc + 10 * log10(mult), label=self.label)
+                mult_noise = Pnoise(
+                    self.fm, self.ldbc + 10 * log10(mult), label=self.label)
             else:
                 try:
-                    mult_noise = Pnoise(self.fm, self.ldbc + 10 * log10(mult), label=self.label)
-                except ValueError as er:
-                    print('Vectors are not of the same length')
+                    mult_noise = Pnoise(
+                        self.fm, self.ldbc + 10 * log10(mult),
+                        label=self.label)
+                except ValueError:
+                    raise ValueError('Vectors are not of the same length')
             return mult_noise
 
+    def integrate(self, fl=None, fh=None, method='trapz'):
+        """ Returns the integrated phase noise in (rad/rms)
 
-    def integrate(self, fl=[], fh=[], method='trapz'):
-        """Returns the integrated phase noise in rad over the limits fl,fh
-        Uses the Gardner algorithm.
+            Parameters
+            ----------
+            fl :
+            fh :
+            method :
+
+            Returns
+            -------
+            phi_out :
+
         """
 
         def gardner(ldbc_ix, fm_ix):
-            """ This is the Garder book integration method for the phase noise
-            that does not work always with measurements or data"""
+            """ Gardner integration method
+
+                Parameters
+                ----------
+                ldbc_ix :
+                fm_ix :
+
+                Returns
+                -------
+                phi_sqrt :
+
+            """
             lfm = len(ldbc_ix)
             # calculate the slope
             ai = ((ldbc_ix[1:lfm] - ldbc_ix[:lfm - 1]) /
                   (log10(fm_ix[1:lfm]) - log10(fm_ix[:lfm - 1])))
-            if np.all(ai < 6):
-                """ If the slopes are never too big used Gardner method
-                In simulations this is not the case """
-                bi = (2 * 10 ** (ldbc_ix[:lfm - 1] / 10) * fm_ix[:lfm - 1] ** (-ai / 10) /
-                      (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1) -
-                                       fm_ix[:lfm - 1] ** (ai / 10 + 1)))
+            """ If the slopes are never too big used Gardner method
+            In simulations this is not the case """
+            bi = (2 * 10 ** (ldbc_ix[:lfm - 1] / 10) * fm_ix[:lfm - 1] **
+                  (-ai / 10) /
+                  (ai / 10 + 1) * (fm_ix[1:lfm] ** (ai / 10 + 1) -
+                                   fm_ix[:lfm - 1] ** (ai / 10 + 1)))
+            if ai < 6:
+                raise Warning(
+                    'Gardner method fail due to large slope changes :\n' +
+                    'use trapz method'
+                )
             return sqrt(sum(bi))
 
         def trapz(ldbc_ix, fm_ix):
+            """ Trapezoidal integration of the phase noise
+
+                Parameters
+                ----------
+                ldbc_ix :
+                fm_ix :
+
+                Returns
+                -------
+                phi_out :
+
+            """
             phi_2 = 2 * 10 ** (ldbc_ix / 10)
             return sqrt(np.trapz(phi_2, fm_ix))
 
-        if fl == []:
+        if fl is None:
             fl = min(self.fm)
-        if fh == []:
+        if fh is None:
             fh = max(self.fm)
         ix = (self.fm >= fl) & (self.fm <= fh)
-        fm_ix = self.fm[ix]
-        ldbc_ix = self.ldbc[ix]
+        fi = self.fm[ix]
+        ldbc_fi = self.ldbc[ix]
         if method == 'trapz':
-            self.phi_out = trapz(ldbc_ix, fm_ix)
+            self.phi_out = trapz(ldbc_fi, fi)
         elif method == 'Gardner':
-            self.phi_out = gardner(ldbc_ix, fm_ix)
+            self.phi_out = gardner(ldbc_fi, fi)
         else:
-            raise Exception('Integrating method not implemented')
+            raise ValueError('Integrating method not implemented')
         return self.phi_out
 
 
 def __pnoise_interp1d__(fi, ldbc_fi, fm):
-    '''Redefine the ordinate from the new fm to fi'''
+    """ Interpolate the phase noise assuming logaritmic linear behavior
+
+        Parameters
+        ---------
+        fi :
+
+        Returns
+        ----------
+        ldbc :
+
+    """
     func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
     ldbc = func_intp(log10(fm))
     return ldbc
@@ -213,35 +260,42 @@ def __pnoise_interp1d__(fi, ldbc_fi, fm):
 def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
     """
     Function to evaluate a asymptotic model of the phase noise
-    :param fi:
-    :param slopes:
-    :param ldbc:
-    :param fm:
-    :return: function
+
+    Parameters
+    ----------
+    fi :
+    slopes :
+    ldbc_fi :
+    fm :
+
+    returns
+    -------
+    ldbc_fm :
+
     """
-    phi2 = 2*10**(ldbc_fi/10)
+    phi2 = 2 * 10 ** (ldbc_fi / 10)
     phi2 = phi2.reshape((1, len(phi2)))
     phi2_matrix = np.repeat(phi2, len(fm), axis=0)
 
-    slopes = np.copy(slopes/10)
+    slopes = np.copy(slopes / 10)
     slopes = slopes.reshape((1, len(slopes)))
     slopes_matrix = np.repeat(slopes, len(fm), axis=0)
 
     fi = fi.reshape((1, len(fi)))
     fi_matrix = np.repeat(fi, len(fm), axis=0)
 
-    fm = fm.reshape((len(fm),1))
+    fm = fm.reshape((len(fm), 1))
     fm_matrix = np.repeat(fm, fi.shape[1], axis=1)
 
-    phi2_fm = np.sum(phi2_matrix*(fm_matrix/fi_matrix)**slopes_matrix, axis=1)
-    ldbc_fm = 10*log10(phi2_fm/2)
+    phi2_fm = np.sum(
+        phi2_matrix * (fm_matrix / fi_matrix) ** slopes_matrix, axis=1)
+    ldbc_fm = 10 * log10(phi2_fm / 2)
     return ldbc_fm
 
 
 """
 Testing and other functions
 """
-
 from numpy.testing import assert_almost_equal
 
 
@@ -263,10 +317,12 @@ def test__init__(plot=False):
         plt.legend()
         plt.show()
 
+
 def test_with_interpolation(plot=False):
     fm = np.logspace(3, 9, 1000)
-    lorentzian = Pnoise.with_interpolation(fm, 10 * np.log10(1 / (fm * fm)), label='Lorentzian')
-    fi = np.logspace(3,9,4)
+    lorentzian = Pnoise.with_interpolation(
+        fm, 10 * np.log10(1 / (fm * fm)), label='Lorentzian')
+    fi = np.logspace(3, 9, 4)
     interpolated = lorentzian.eval_func(fi)
     ldbc_equation = 10 * np.log10(1 / (fi * fi))
     assert_almost_equal(ldbc_equation, interpolated.ldbc, 4)
@@ -276,8 +332,7 @@ def test_with_interpolation(plot=False):
         plt.show()
 
 
-
-def test_private_functions(plot=False):
+def test_private_functions():
     # test the new
     fi = np.array([1e4, 1e9])
     ldbc_fi = np.array([-40, -150])
@@ -303,22 +358,24 @@ def test_with_points_slopes(plot=False):
         pnoise_model.plot('o')
         pnoise_extrapolated.plot()
         plt.show()
-def test_old_fasion_interpolation(plot=False):
-    fi = np.array([1e4, 1e9])
-    ldbc_fi = np.array([-40, -150])
-    pnoise_model = Pnoise(fi, ldbc_fi)
-    pnoise_model_old = pnoise_model
-    fm = np.logspace(4,9,100)
-    fm = pnoise_model.set_fm(fm)
-    if plot:
-        print(pnoise_model_old.fm.shape)
-        print(pnoise_model_old.ldbc.shape)
-        pnoise_model_old.plot()
-        pnoise_model.plot()
+
+
+def test_integration(plot=False):
+    fm = np.logspace(4,8,1000)
+    lorentzian  = Pnoise(fm,10*np.log10(1/(fm*fm)),label='Lorentzian')
+    white = Pnoise(fm,-120*np.ones(fm.shape),label='white')
+    added = lorentzian+white
+    iadded_gardner = added.integrate()
+    iadded_trapz = added.integrate(method='trapz')
+    f_int = lambda fm : 2.0e-12*fm-2.0/fm
+    i_f_int = np.sqrt(f_int(fm[-1])-f_int(fm[0]))
+    assert_almost_equal(iadded_trapz, i_f_int, 5)
+    assert_almost_equal(iadded_trapz, i_f_int, 5)
+
 
 if __name__ == "__main__":
     test__init__(plot=False)
-    test_private_functions(plot=False)
+    test_private_functions()
     test_with_interpolation(plot=False)
     test_with_points_slopes(plot=False)
-    test_old_fasion_interpolation(plot=True)
+    test_integration(plot=False)
