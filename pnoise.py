@@ -49,16 +49,17 @@ class Pnoise(object):
         """
         self.units = units
         self.label = label
-        self.fm = np.array(fm)
+        self.fm = np.asarray(fm)
 
         # values for point slope approximation
         self.slopes = None
 
         self.phi_out = None
 
-        self.ldbc = __funits__[units](np.array(pnfm))
+        self.ldbc = __funits__[units](np.asarray(pnfm))
 
-        self.func_ldbc = lambda fx: __pnoise_interp1d__(fm, self.ldbc, fx)
+        self.func_ldbc = lambda fx:\
+            __pnoise_interp1d__(np.copy(fm), np.copy(self.ldbc), fx)
 
     @classmethod
     def with_function(cls, func, label=None):
@@ -104,13 +105,16 @@ class Pnoise(object):
         pnoise : Pnoise
 
         """
+        fm = np.asarray(fm)
+        ldbc_fm = np.asarray(ldbc_fm)
+        slopes = np.asarray(slopes)
         pnoise_class = cls(fm, ldbc_fm, label=label, units='dBc/Hz')
         pnoise_class.slopes = slopes
         pnoise_class.func_ldbc = lambda fi: __pnoise_point_slopes__(
             fm, ldbc_fm, slopes, fi)
         return pnoise_class
 
-    def set_fm(self, fi):
+    def resample(self, fi):
         """
         Set the offset frequency of the noise using the interpolation, or
         extrapolation function if they are defined
@@ -123,14 +127,42 @@ class Pnoise(object):
         Returns
         -------
         """
-        self.func_ldbc =  lambda fx: __pnoise_interp1d__(
-                self.fm, self.ldbc, fx)
+        fi = np.asarray(fi)
         self.ldbc = self.func_ldbc(fi)
         self.fm = fi
 
     def eval_func(self, fx):
+        """
+        Return a function with different frequency sampling
+        """
         pnoise_class = Pnoise(fx, self.func_ldbc(fx), label=self.label)
         return pnoise_class
+
+
+    def asymptotic_model(self, fi, slopes, label=None):
+        """
+        Return a phase noise function made with the asymptotic behavior extrapolated at certain frequencies
+
+        Parameters
+        ----------
+        fi : array_like
+            Array with the interpolated values
+        slopes: array_like
+            Array with the slopes were the noise is to going to be interpolated
+        label: str
+            Phase noise labal
+
+        Returns
+        -------
+        pnoise_class:
+            A new class with this values
+        """
+        fi = np.asarray(fi)
+        slopes = np.asarray(slopes)
+        ldbc_fi = self.func_ldbc(fi)
+        pnoise_class = Pnoise.with_points_slopes(fi, ldbc_fi, slopes, label=label)
+        return pnoise_class
+
 
     def plot(self, *args, **kwargs):
         plt.ylabel('$\mathcal{L}$(dBc/Hz)')
