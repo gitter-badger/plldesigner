@@ -53,22 +53,12 @@ class Pnoise(object):
 
         # values for point slope approximation
         self.slopes = None
-        self.func_ldbc = None
+
         self.phi_out = None
 
         self.ldbc = __funits__[units](np.array(pnfm))
 
-    @classmethod
-    def with_interpolation(cls, fm, pnfm, label=None, units='dBc/Hz'):
-        pnoise_class = cls(None, None, label=label, units='dBc/Hz')
-        pnoise_class.fm = fm
-        pnoise_class.ldbc = __funits__[units](np.array(pnfm))
-        try:
-            pnoise_class.func_ldbc = lambda fx: __pnoise_interp1d__(
-                fm, pnoise_class.ldbc, fx)
-        except ValueError:
-            raise ValueError('The function can not be interpolated')
-        return pnoise_class
+        self.func_ldbc = lambda fx: __pnoise_interp1d__(fm, self.ldbc, fx)
 
     @classmethod
     def with_function(cls, func, label=None):
@@ -94,16 +84,16 @@ class Pnoise(object):
         return pnoise_class
 
     @classmethod
-    def with_points_slopes(cls, fi, ldbc_fi, slopes, label=None):
+    def with_points_slopes(cls, fm, ldbc_fm, slopes, label=None):
         """
         Phase noise with point and slope
 
         Parameters
         ----------
-        fi : array_like
+        fm : array_like
             Array with the offsets frequencies of the phase noise values
-        ldbc_fi : array_like
-            Array with the phase noise values at the fi frequencies
+        ldbc_fm : array_like
+            Array with the phase noise values at the fm frequencies
         slopes : array_like
             Array with slopes of the values that are interpolated (dBc/dec)
         label : str
@@ -114,16 +104,24 @@ class Pnoise(object):
         pnoise : Pnoise
 
         """
-        pnoise_class = cls(fi, ldbc_fi, label=label, units='dBc/Hz')
+        pnoise_class = cls(fm, ldbc_fm, label=label, units='dBc/Hz')
         pnoise_class.slopes = slopes
-        pnoise_class.func_ldbc = lambda fm: __pnoise_point_slopes__(
-            fi, ldbc_fi, slopes, fm)
+        pnoise_class.func_ldbc = lambda fi: __pnoise_point_slopes__(
+            fm, ldbc_fm, slopes, fi)
         return pnoise_class
 
     def set_fm(self, fi):
         """
-        :param fi:
-        :return:
+        Set the offset frequency of the noise using the interpolation, or
+        extrapolation function if they are defined
+
+        Parameters
+        ----------
+        fi : array_like
+            Array with the new values
+
+        Returns
+        -------
         """
         self.func_ldbc =  lambda fx: __pnoise_interp1d__(
                 self.fm, self.ldbc, fx)
@@ -248,57 +246,58 @@ class Pnoise(object):
         return self.phi_out
 
 
-def __pnoise_interp1d__(fi, ldbc_fi, fm):
+def __pnoise_interp1d__(fm, ldbc_fm, fi):
     """ Interpolate the phase noise assuming logaritmic linear behavior
 
         Parameters
         ---------
-        fi :
+        fm :
+        ldbc_fm :
 
         Returns
         ----------
-        ldbc :
+        ldbc_fi :
 
     """
-    func_intp = intp.interp1d(log10(fi), ldbc_fi, kind='linear')
-    ldbc = func_intp(log10(fm))
-    return ldbc
+    func_intp = intp.interp1d(log10(fm), ldbc_fm, kind='linear')
+    ldbc_fi = func_intp(log10(fi))
+    return ldbc_fi
 
 
-def __pnoise_point_slopes__(fi, ldbc_fi, slopes, fm):
+def __pnoise_point_slopes__(fm, ldbc_fm, slopes, fi):
     """
     Function to evaluate a asymptotic model of the phase noise
 
     Parameters
     ----------
-    fi :
-    slopes :
-    ldbc_fi :
     fm :
+    slopes :
+    ldbc_fm :
+    fi :
 
     returns
     -------
-    ldbc_fm :
+    ldbc_fi :
 
     """
-    phi2 = 2 * 10 ** (ldbc_fi / 10)
+    phi2 = 2 * 10 ** (ldbc_fm / 10)
     phi2 = phi2.reshape((1, len(phi2)))
-    phi2_matrix = np.repeat(phi2, len(fm), axis=0)
+    phi2_matrix = np.repeat(phi2, len(fi), axis=0)
 
     slopes = np.copy(slopes / 10)
     slopes = slopes.reshape((1, len(slopes)))
-    slopes_matrix = np.repeat(slopes, len(fm), axis=0)
+    slopes_matrix = np.repeat(slopes, len(fi), axis=0)
 
-    fi = fi.reshape((1, len(fi)))
-    fi_matrix = np.repeat(fi, len(fm), axis=0)
+    fm = fm.reshape((1, len(fm)))
+    fi_matrix = np.repeat(fm, len(fi), axis=0)
 
-    fm = fm.reshape((len(fm), 1))
-    fm_matrix = np.repeat(fm, fi.shape[1], axis=1)
+    fi = fi.reshape((len(fi), 1))
+    fm_matrix = np.repeat(fi, fm.shape[1], axis=1)
 
     phi2_fm = np.sum(
         phi2_matrix * (fm_matrix / fi_matrix) ** slopes_matrix, axis=1)
-    ldbc_fm = 10 * log10(phi2_fm / 2)
-    return ldbc_fm
+    ldbc_fi = 10 * log10(phi2_fm / 2)
+    return ldbc_fi
 
 
 """
@@ -323,20 +322,6 @@ def test__init__(plot=False):
         white.plot()
         added.plot()
         plt.legend()
-        plt.show()
-
-
-def test_with_interpolation(plot=False):
-    fm = np.logspace(3, 9, 1000)
-    lorentzian = Pnoise.with_interpolation(
-        fm, 10 * np.log10(1 / (fm * fm)), label='Lorentzian')
-    fi = np.logspace(3, 9, 4)
-    interpolated = lorentzian.eval_func(fi)
-    ldbc_equation = 10 * np.log10(1 / (fi * fi))
-    assert_almost_equal(ldbc_equation, interpolated.ldbc, 4)
-    if plot:
-        lorentzian.plot()
-        interpolated.plot('o')
         plt.show()
 
 
@@ -384,6 +369,5 @@ def test_integration(plot=False):
 if __name__ == "__main__":
     test__init__(plot=False)
     test_private_functions()
-    test_with_interpolation(plot=False)
     test_with_points_slopes(plot=False)
     test_integration(plot=False)
