@@ -9,7 +9,6 @@ from numpy import log10, sqrt, sum
 import matplotlib.pyplot as plt
 import scipy.interpolate as intp
 
-
 # functions to handle the units
 __funits__ = {
     "dBc/Hz": lambda x: x,
@@ -22,13 +21,13 @@ class Pnoise(object):
     """
     Phase noise class to manipulate phase noise data in the frequency offset
     format
-
+    
     Parameters
     ----------
-
-    Atributes
-    ---------
-
+    fm : array_like
+        Offset frequency vector
+    pn : array_like
+        Phase noise values
 
     """
 
@@ -49,7 +48,7 @@ class Pnoise(object):
         """
         self.units = units
         self.label = label
-        self.fm = np.asarray(fm)
+        self._fm = np.asarray(fm)
 
         # values for point slope approximation
         self.slopes = None
@@ -60,6 +59,17 @@ class Pnoise(object):
 
         self.func_ldbc = lambda fx:\
             __pnoise_interp1d__(np.copy(fm), np.copy(self.ldbc), fx)
+
+    @property
+    def fm(self):
+        return self._fm
+    
+    @fm.setter
+    def fm(self, fi):
+        fi = np.asarray(fi)
+        self._fm = fi
+        self.ldbc = self.func_ldbc(fi)
+        
 
     @classmethod
     def with_function(cls, func, label=None):
@@ -114,26 +124,9 @@ class Pnoise(object):
             fm, ldbc_fm, slopes, fi)
         return pnoise_class
 
-    def resample(self, fi):
-        """
-        Set the offset frequency of the noise using the interpolation, or
-        extrapolation function if they are defined
-
-        Parameters
-        ----------
-        fi : array_like
-            Array with the new values
-
-        Returns
-        -------
-        """
-        fi = np.asarray(fi)
-        self.ldbc = self.func_ldbc(fi)
-        self.fm = fi
-
     def eval_func(self, fx):
         """
-        Return a function with different frequency sampling
+        Return a Pnoise clase with with different frequency sampling
         """
         pnoise_class = Pnoise(fx, self.func_ldbc(fx), label=self.label)
         return pnoise_class
@@ -206,14 +199,18 @@ class Pnoise(object):
 
             Parameters
             ----------
-            fl :
-            fh :
-            method :
-
+            fl : float
+                Lower frequency integration limit. Default is: min(fm)
+            fh : float
+                Higher frequency integration limit. Default is: max(fm)
+            method : str
+                Integration method used. Default is trapz with logarithmic 
+                interpolation 
+                
             Returns
             -------
-            phi_out :
-
+            phi_out : float
+                The integrated phase in rad
         """
 
         def gardner(ldbc_ix, fm_ix):
@@ -378,7 +375,9 @@ def test_with_points_slopes(plot=False):
     slopes = np.array([-30, -20])
     pnoise_model = Pnoise.with_points_slopes(fi, ldbc_fi, slopes)
     fm = np.logspace(3, 9, 20)
-    pnoise_extrapolated = pnoise_model.eval_func(fm)
+    pnoise_extrapolated = pnoise_model
+    pnoise_extrapolated.fm = fm
+
     if plot:
         pnoise_model.plot('o')
         pnoise_extrapolated.plot()
@@ -401,5 +400,5 @@ def test_integration(plot=False):
 if __name__ == "__main__":
     test__init__(plot=False)
     test_private_functions()
-    test_with_points_slopes(plot=False)
+    test_with_points_slopes(plot=True)
     test_integration(plot=False)

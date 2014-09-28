@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-First version of this class
+A clase to design and analyse PLL's using the phase domain model
 """
 
 from __future__ import (absolute_import, division, print_function)
@@ -20,20 +20,32 @@ class AnalogPLL(object):
 
     def loopcalc(self, fc, pm, Lvco, Lvco_fr, DL, Temp=300.13):
         """
-          Calculates a linear PLL using fc,pm,order(2,3), Navg
-          [filter,G,T,H] = loopvalues(fc,pm,order,Navg,Kvco,Lvco,Lvco_fr,DL,Temp)
-          fc(Hz)          The cut off frequency
-          pm(Degrees)     The decided phase margin
-          Lvco (dBc)      VCO phase noise at(Lvco_fr)
-          Lvco_fr (Hz)         Frequency the Lvco is specified
-          DL(dB)          Distortion of the Lvco by R1 allowed
-          Temp(K)         K
-          filter_val      Is a dictionary with all the filter components
+        Calculates the filter of a pll of type2 and 2nd Order
+        
+        Parameters
+        ----------
+        fc : float
+            The cut off frequency in Hertz
+        pm : float
+            The phase margin in degrees
+        Lvco : float
+            VCO phase noise in dBc/Hz at frequency Lvco_fr
+        Lvco_fr : float 
+            Frequency where the  Lvco is specified
+        DL : float
+            Ratio of the noise of the Filter to the the noise of the VCO due to R1
+        Kvco : float
+            Oscillator gain in Hz/V
+        Navg : float
+            Division ration average
+        Temp : float
+            temperature in K
+        
+        Return
+        ------
+        filter_val      Is a dictionary with all the filter components
 
-
-          ToDo:           The distance from tp2 to tp1 should be calculated
-                          if possible from the noise """
-
+        """
         self.fc, self.pm, self.Lvco = fc, pm, Lvco
         self.Lvco_fr, self.DL, self.Temp = Lvco_fr, DL, Temp
         Kvco = self.Kvco
@@ -46,7 +58,8 @@ class AnalogPLL(object):
             tz = 1 / wz
             tp = 1 / wp
             phi_fm = sqrt(2 * 10 ** (Lvco/10))
-            R1 = (10 ** (DL / 10) - 1) / ((b - 1) / b) / (4 * k.k * Temp * Kvco ** 2) * phi_fm ** 2 * Lvco_fr ** 2
+            R1 = (10 ** (DL / 10) - 1) / ((b - 1) / b) / \
+                (4 * k.k * Temp * Kvco ** 2) * phi_fm ** 2 * Lvco_fr ** 2
             C1 = tz / R1
             C2 = tz * tp / R1 / (tz - tp)
             Icp = (2 * k.pi * self.Navg * fc * b) / (R1 * Kvco * (b - 1))
@@ -153,14 +166,6 @@ class AnalogPLL(object):
         self.filter_vals['C1'] / 1e-12, self.filter_vals['C2'] / 1e-12,
         self.filter_vals['C3'] / 1e-12)
         return str_val
-
-
-class vco(object):
-    def __init__(self, kvco, fo, vfo):
-        self.kvco = kvco
-        self.fo = fo
-        self.vfo = vfo
-        self.freq_vs_volt = lambda vcont : self.fo + (vcont - self.vfo) * self.kvco
 
 
 class AnalogPLLDict(AnalogPLL):
