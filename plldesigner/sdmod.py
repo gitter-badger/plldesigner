@@ -5,6 +5,7 @@ Implementation of a sigma delta modulator and the functions related
 import numpy as np
 from numpy import (zeros, arange, log10, sin, pi)
 import matplotlib.pyplot as plt
+from .pnoise import Pnoise
 
 
 class SDModulator(object):
@@ -236,9 +237,13 @@ def L_mash_dB(m, fm, fref, n=1.0):
 
     return
     ------
-    ldbc :
+    ldbc : Pnoise
+        Return a function object of the noise
     """
-    return 10 * log10((2 * pi) ** 2 / (12 * fref) * (2 * sin(pi * fm / fref)) ** (2 * (m - 1)) / n ** 2)
+    func_ldbc = lambda fm : 10 * log10((2 * pi) ** 2 / (12 * fref) * 
+        (2 * sin(pi * fm / fref)) ** (2 * (m - 1)) / n ** 2)
+    ldbc = Pnoise.with_function(func_ldbc, label='sdm')
+    return ldbc 
 
 
 if __name__ == "__main__":
