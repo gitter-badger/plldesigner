@@ -218,7 +218,7 @@ def gen_mash(order, n, k, init=()):
     return sd, cycles
 
 
-def L_mash_dB(m, fm, fref, n=1.0):
+def L_mash_dB(m, fref, n=1.0):
     """ Phase noise theoretical value of noise produced by a mash111 SDM
 
     This procedure calculates the noise at the output of the SD modulator
@@ -227,8 +227,6 @@ def L_mash_dB(m, fm, fref, n=1.0):
     ----------
     m : int
         The order of the SD modulator
-    fm : array_like
-        Frequency offsets were the  noise is calculated
     fref : float
         Reference frequency that is used to compare the output of the SD
         modulator
